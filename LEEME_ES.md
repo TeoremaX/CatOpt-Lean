@@ -168,3 +168,15 @@ de `m` segmentos. El ejemplo previsto mejora el coste de 6 a 4.
 no hemos demostrado que ambos programas sean equivalentes. Tampoco existe
 una garantía de óptimo global o de tiempo real. Lee
 `docs/tsp-two-opt.md` y verifica con `lake build` antes de publicar.
+
+## v0.9 — Verificador formal de óptimo local 2-opt
+
+Nuevo `CatOpt/TSP/LocalOptimality.lean`: comprueba exhaustivamente que ninguna
+inversión de segmento reduce el coste de una ruta. Sus teoremas en Lean deben
+pasar `lake build` antes de declararse verificados. Esto NO demuestra óptimo
+global ni valida el ejecutable Python. La revisión bibliográfica y los
+criterios para aspirar a un artículo están en `docs/research-positioning-v09.md`.
+
+La fórmula rápida de cuatro aristas de 2-opt requiere simetría. El modelo
+del TSP actual NO exige simetría, por lo que el nuevo comprobador evalúa
+el coste cíclico completo y no utiliza esa fórmula.

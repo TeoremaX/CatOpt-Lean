@@ -2,9 +2,9 @@
 
 **Typed compositional search pipelines with feasibility and incumbent-monotonicity certificates**
 
-> Research-oriented Lean 4 + Mathlib prototype · numerical TSP case studies in Python · v0.7.0
+> Research-oriented Lean 4 + Mathlib prototype · numerical TSP case studies in Python · v0.9.0 (experimental; v0.9 Lean proof compilation pending)
 >
-> **Verification status:** The user confirmed successful Lean builds for **v0.5** (`6031 jobs`) and **v0.6** (`6037 jobs`), including demonstration output and a clean Git tree. **v0.7 remains unverified until its own `lake build` passes.**
+> **Verification status:** The user confirmed successful Lean builds through **v0.8** (`17,365 jobs` for the latest build), the TSP demo, and a clean Git history. **v0.9 is pending Lean compilation.**
 
 ## Research question
 
@@ -120,7 +120,24 @@ python3 experiments/run_benchmark.py --runs 2 --budget 1500 --instances grid12
 The benchmark requires no third-party Python packages. Results are emitted to `experiments/results.csv` (ignored by Git). Executed smoke and reference batches (with a 135-row result CSV) are described in `docs/experiments.md` but are not evidence of algorithmic superiority.
 
 
-## v0.8: Permutation tours and 2-opt-style reversal (pending Lean compilation)
+## v0.9 — Exhaustive, proof-carrying 2-opt local optimality (Lean pending)
+
+`CatOpt/TSP/LocalOptimality.lean` checks all ordered finite segment-reversal
+moves and provides general soundness and completeness theorems. An accepted
+`CheckedLocalMinimum` certifies **local** minimality with respect to this
+entire neighborhood, for natural-valued directed distances. It does *not*
+certify global optimality or properties of imported external output.
+
+The Python reference includes a directed counterexample showing why the
+four-edge symmetric 2-opt cost formula must not be applied without symmetry.
+See [`docs/research-positioning-v09.md`](docs/research-positioning-v09.md) for
+the state of the art and what would be required for a research paper.
+
+**Verification:** v0.8 was accepted by Lean on the user's Windows machine
+(17,365 jobs); v0.9 must still pass its own build. No peer-reviewed-paper
+submission is ready.
+
+## v0.8: Permutation tours and 2-opt-style reversal (user-verified Lean compilation)
 
 `CatOpt/TSP/TwoOpt.lean` upgrades the former toy `Fin` state to a genuinely
 permutation-valued TSP tour (`Equiv.Perm (Fin (n+1))`). A typed segment reversal
@@ -134,9 +151,7 @@ The Python `two_opt_reference.py` independently checks the same small example
 and exhaustively checks bijection/involution for 1–6 cities. It is **not**
 formally verified against the Lean program. No 2-opt delta theorem, full
 TSP GVNS, TSPLIB result or original discovery is claimed. See
-[`docs/tsp-two-opt.md`](docs/tsp-two-opt.md). The v0.7 branch was compiled by
-the user (6043 jobs); v0.8 must separately pass Lean before publication as a
-verified release.
+[`docs/tsp-two-opt.md`](docs/tsp-two-opt.md). The v0.8 branch was compiled by the user (17,365 jobs), including the TSP demo.
 
 ## v0.2: generator and static budget certificates
 

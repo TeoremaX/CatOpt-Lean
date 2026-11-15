@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.0 — 2026-11-15 (Lean validation pending)
+
+- Add exhaustive finite 2-opt local-optimality checker for permutation tours with directed natural-valued distances.
+- Add soundness/completeness theorems and proof-carrying `CheckedLocalMinimum` structure.
+- Add 4-city regression examples, independent Python checks and an asymmetric counterexample to the naive four-edge delta formula.
+- Audit originality and define publishability gates in `docs/research-positioning-v09.md`.
+- **Not yet compiled with Lean**. Validated v0.8 baseline: user-confirmed 17,365-job build.
+
 ## 0.8.0 — 2026-11-15 (new Lean proofs pending compilation)
 
 - Introduce permutation-valued TSP tours as `Equiv.Perm (Fin (n+1))`.
