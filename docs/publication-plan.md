@@ -40,8 +40,9 @@ comparison against established frameworks.
 ## Go/no-go checkpoints
 
 - **After v0.3:** prototype illustrates instrumentation; no total resource claim.
-- **After v0.4:** fully instrumented local search and tested finite-oracle
-  example; decide whether the extra formal infrastructure is maintainable.
+- **After v0.4:** closed finite-list selection and metered acceptance, with a
+  supplied neighbor list; this is not yet end-to-end local-search accounting.
+  Require v0.4 `lake build` before advancing.
 - **After v0.5:** adaptive GVNS and controlled-loop proofs; ask an expert to
   independently audit the semantics and the literature.
 - **After v0.6:** pruning proof and empirical comparison; abandon any claim

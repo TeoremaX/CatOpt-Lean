@@ -1,48 +1,10 @@
-# Verification status — 2026-11-15
+# Verification status (updated 2026-11-15)
 
-## User-confirmed v0.2 build (Lean 4.32.0 / Mathlib 4.32.0)
+- **v0.3 confirmed:** user ran `lake build` successfully (6019 jobs), `lake exe catopt-demo`, `py tools/check_no_sorry.py` and all five Python tests.
+- **v0.4 pending:** new `OracleLocalSearch.lean` and regression proofs have been source-reviewed, but this authoring environment has **no Lean/Lake compiler** and cannot download one. Execute the staged patch script or run the verification commands on Lean 4.32.0.
+- The `check_no_sorry.py` scanner checks for common unfinished-proof markers, **not** soundness; successful `lake build` is the relevant kernel-validation evidence.
+- This repository does not verify calls inside external neighborhood generators, original opaque heuristics, or independent Python TSP implementations.
 
-The user ran these commands in PowerShell on Windows:
+## After a successful v0.4 build
 
-```text
-lake build                         # Build completed successfully (6013 jobs)
-lake exe catopt-demo              # 5 synthesized budget-certified recipes
-py tools/check_no_sorry.py        # No obvious unfinished proofs / extra axioms
-py -m unittest discover ...       # 5/5 tests passed
-```
-
-This evidence validates the **v0.2** repository and is not extrapolated to
-newly authored v0.3 files. The simple lexical no-sorry scan is weaker than
-Lean compilation; built Lean theorems must be inspected for their premises.
-
-## v0.3 state
-
-- Source files have been written and reviewed manually.
-- The authoring environment lacks `lake`/`lean` and has no DNS for Lean download.
-- Thus the new modules `CatOpt/DSL/Resources.lean`, `CatOpt/Examples/Resources.lean`
-  and `CatOpt/Tests/Resources.lean` **have not been typechecked** here.
-- Python regression tests from `experiments/` can be run independently and do
-  not imply Lean correctness.
-- The new query counter intentionally covers only *explicit* `probe` actions.
-  Opaque primitives can perform hidden objective computations; no theorem
-  bounds full metaheuristic evaluation counts. See `docs/resources.md`.
-
-## Commands to complete verification
-
-```powershell
-lake build
-lake exe catopt-demo
-py tools/check_no_sorry.py
-py -m unittest discover -s experiments -p "test_*.py" -v
-```
-
-Preserve the existing `.lake` directory and `lake-manifest.json` when using
-the incremental patch. Do not run `lake update` if v0.2 is already configured.
-
-## Further trusted-boundary analysis
-
-Search operators are `SafeHom` functions certified for feasibility. They are
-not formal programs with controlled oracle access; they may query `P.cost`
-internally. The new model is a verifiable *instrumentation fragment*, not a
-fully instrumented GVNS, GRASP or Iterated Greedy implementation. Python TSP
-implementations remain separate and without a Lean refinement theorem.
+Record the exact Git commit SHA, toolchain, `lake build` output, and CI run URL here before citing verification in a publication.

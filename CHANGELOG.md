@@ -1,6 +1,16 @@
 # Changelog
 
-## 0.3.0 — 2026-11-15 (new Lean validation pending)
+## 0.4.0 — 2026-11-15 (Lean compilation pending)
+
+- Added a finite, typed feasible-neighborhood selector with explicit `probe` calls.
+- Added exact oracle-count and value-erasure theorems for selection, plus a non-worsening proof.
+- Added local-search/acceptance round, exact count `2 × candidates + 2`, and a proof-carrying `RoundBudget`.
+- Added examples, compile-time proof regressions, and executable demonstration.
+- Added staged Git patch/commit workflow to validate each change before committing.
+- **Trust boundary:** neighbor generation and existing opaque primitives remain unmetered.
+- **Status:** v0.3 was user-verified (6019-job Lean build, demo, 5/5 Python tests); v0.4 has not been compiled here.
+
+## 0.3.0 — 2026-11-15 (user-confirmed Lean build)
 
 - Added scoping originality audit with comparisons to MORK, ReSyn, CSLib
   TimeM and mechanized complexity formalisms; no claim of global novelty.
@@ -11,7 +21,7 @@
   document, and refreshed verification-status evidence.
 - **Limit:** instrumented search counts acceptance probes only. The existing
   opaque `Primitives` may make additional unrecorded objective calls.
-- **Status:** v0.3 Lean build has not yet run in authoring environment.
+- **Verified by user:** `lake build` 6019 jobs; demo and both checks completed successfully.
 
 ## 0.2.0 — 2026-11-15 (user-confirmed Lean build)
 

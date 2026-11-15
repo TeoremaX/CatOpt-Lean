@@ -84,8 +84,9 @@ py -m unittest discover -s experiments -p "test_*.py" -v
 ```
 
 Compiling `CatOpt` imports `CatOpt/Tests/Resources.lean` and checks all examples.
-Do not claim this new v0.3 layer has been accepted until `lake build` succeeds
-on Lean 4.32.0. All v0.2 imports/proofs are preserved.
+The user confirmed that this v0.3 layer was accepted by `lake build`
+on Lean 4.32.0 on Windows (6019 jobs, 2026-11-15). The new v0.4 layer
+remains unverified until its own build passes. All v0.2 imports/proofs are preserved.
 
 ## Dependencies and prior art
 

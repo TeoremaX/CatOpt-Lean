@@ -2,9 +2,9 @@
 
 **Typed compositional search pipelines with feasibility and incumbent-monotonicity certificates**
 
-> Research-oriented Lean 4 + Mathlib prototype · numerical TSP case studies in Python · v0.3.0
+> Research-oriented Lean 4 + Mathlib prototype · numerical TSP case studies in Python · v0.4.0
 >
-> **Verification status:** The user confirmed the full **v0.2** project built successfully on Windows using Lean 4.32.0 (`6013 jobs`), the demo produced five certified recipes, `check_no_sorry.py` passed, and 5/5 Python tests passed. The **new v0.3 instrumentation layer is not yet Lean-compiled** in the authoring environment; validate it with `lake build`.
+> **Verification status:** The user confirmed the full **v0.3** project built successfully on Windows using Lean 4.32.0 (`6019 jobs`), including v0.3 instrumentation, `check_no_sorry.py`, and 5/5 Python tests. **New v0.4 code has not been Lean-compiled in the authoring environment**; run `lake build` before claiming it is formally verified.
 
 ## Research question
 
@@ -55,7 +55,8 @@ CatOpt-Lean/
 │   │   ├── Semantics.lean              categorical interpretation and laws
 │   │   ├── Search.lean                 phase-typed search DSL and soundness
 │   │   ├── Synthesis.lean              raw checker, round generator, budget certificates
-│   │   └── Resources.lean              counted oracle observations and erasure theorem
+│   │   ├── Resources.lean              counted acceptance probes and erasure theorem
+│   │   └── OracleLocalSearch.lean      metered feasible-list selection
 │   ├── Algorithms/
 │   │   ├── GRASP.lean                   seeded GRASP-style rounds
 │   │   ├── GVNS.lean                    fixed-neighbourhood VNS schedule
@@ -63,11 +64,13 @@ CatOpt-Lean/
 │   ├── Examples/
 │   │   ├── Finite.lean               executable finite-state semantics
 │   │   ├── Synthesis.lean            shared synthesis demo parameters
-│   │   └── Resources.lean            instrumented examples
+│   │   ├── Resources.lean            instrumented examples
+│   │   └── OracleLocalSearch.lean    finite-neighborhood example
 │   └── Tests/
 │       ├── Proofs.lean                 existing proof checks
 │       ├── Synthesis.lean              synthesis/compiler regression tests
-│       └── Resources.lean              instrumented-query theorem checks
+│       ├── Resources.lean              instrumented-query theorem checks
+│       └── OracleLocalSearch.lean      v0.4 proof regression checks
 ├── Main.lean                           Lean demo
 ├── experiments/
 │   ├── tsp.py                           independent TSP benchmark engine
@@ -143,6 +146,24 @@ See [`docs/resources.md`](docs/resources.md) and the
 For scientific milestones and publication criteria see
 [`docs/publication-plan.md`](docs/publication-plan.md).
 
+## v0.4: metered finite-neighborhood selection
+
+`CatOpt/DSL/OracleLocalSearch.lean` introduces a closed best-of-list *selector* for
+supplied **feasible** candidates. Each comparison uses two explicit `probe`
+calls, and Lean is asked to establish **exact** observed query counts,
+value-preserving erasure to a pure reference selector, and non-worsening of the
+selected objective. A selector-plus-acceptance round accounts for
+`2 × candidate_count + 2` instrumented observations and supports a
+proof-bearing `RoundBudget` certificate.
+
+The **neighbor-list producer is still external** and may contain uninstrumented
+computation or oracle calls; existing GRASP/GVNS/IG operators are not reverified
+by this new module. This is not a complete evaluation bound for any of those
+algorithms. See [`docs/oracle-local-search.md`](docs/oracle-local-search.md).
+
+For incremental Git commits, see [`docs/git-workflow.md`](docs/git-workflow.md)
+and the separate v0.4 patch ZIP with `apply_v04.ps1`.
+
 ## What is formally stated, and what is not?
 
 | Component | Mathematical claim | Current evidence |
@@ -153,7 +174,8 @@ For scientific milestones and publication criteria see
 | Search | Incumbent cost does not increase under any well-typed program | Confirmed by user in v0.1 Windows build |
 | GRASP/GVNS/IG | Finite sequences with well-typed operators and generic proof | Confirmed by user in v0.1 Windows build |
 | v0.2 synthesis | Typed action checker, round generation, syntactic size, budget certificate and incumbent guarantee | User-confirmed successful 6013-job Lean build |
-| v0.3 instrumented oracle | Closed list-scoring query count, acceptance-probe count, interpreter erasure and incumbent monotonicity | New Lean source; compilation pending |
+| v0.3 instrumented oracle | Closed list-scoring query count, acceptance-probe count, interpreter erasure and incumbent monotonicity | User-confirmed 6019-job Lean build |
+| v0.4 local selector | Exact selection/acceptance query count and non-worsening for a supplied feasible neighbor list | Pending v0.4 `lake build` |
 | TSP | Feasible benchmark implementations, repeatable seeds, exact small-instance optima | Executed Python tests; **not Lean verified** |
 | General convergence | No claim | Not implemented |
 | Experimental superiority | No claim | Requires independent evaluation |
@@ -182,6 +204,6 @@ These papers motivate compositional mathematics but **do not certify that CatOpt
 
 ## Project status
 
-**0.3.0 — resource-instrumentation scaffold / new verification pending.** The user verified the entire v0.2 project with Lean 4.32.0 on 2026-11-15 (6013 jobs) and Python unit tests (5/5). The new v0.3 modules are source-reviewed but cannot yet be described as compiler-verified. The instrumentation does not cover opaque primitive internals. See `docs/verification-status.md`.
+**0.4.0 — finite-neighborhood selector / Lean verification pending.** The user verified the entire v0.3 project with Lean 4.32.0 on 2026-11-15 (6019 jobs) and Python tests (5/5). The newly added v0.4 modules are source-reviewed, but their compilation still needs to be confirmed. Neither v0.3 nor v0.4 counts calls hidden in opaque generators or primitives. See `docs/verification-status.md`.
 
 Contributions, counterexamples and critical mathematical review are welcome. Licensed under MIT.

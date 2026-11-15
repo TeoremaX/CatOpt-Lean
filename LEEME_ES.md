@@ -50,6 +50,27 @@ El contador de `runMetered` registra únicamente las observaciones explícitas
 de aceptación, **no el total de evaluaciones de la metaheurística**. No hay
 prueba sobre tiempo real, RAM, evaluación total de TSP o refinamiento de Python.
 
+## Novedad de v0.4: selección de vecinos con consultas medidas
+
+El módulo `CatOpt/DSL/OracleLocalSearch.lean` recibe una lista de soluciones
+factibles **ya construidas** y selecciona la mejor sin empeorar la solución
+inicial. Cada comparación invoca dos veces `probe`; se han escrito teoremas
+sobre la equivalencia con una selección pura y el número exacto de consultas
+(`2 × número_de_vecinos`). La aceptación añade dos consultas más.
+
+**Límite importante:** todavía no contabilizamos la generación de la lista de
+vecinos, ni los algoritmos GRASP/GVNS/IG originales. La garantía corresponde
+al selector cerrado y su aceptación, no al coste total de la metaheurística.
+Consulta `docs/oracle-local-search.md`.
+
+## Commits por fase
+
+He preparado un parche v0.4 con `apply_v04.ps1` que distribuye los cambios en
+**tres commits** y compila Lean antes de confirmar los cambios. Sigue
+`docs/git-workflow.md`. No modifica ni publica tu repositorio remoto sin tu
+acción. El historial de v0.3 debe estar confirmado primero (`git status`
+limpio). El script se ejecuta desde la carpeta donde extraigas el parche.
+
 ## Archivos para leer
 
 - `CatOpt/DSL/Resources.lean`: semántica de consultas y pruebas.
@@ -62,7 +83,7 @@ prueba sobre tiempo real, RAM, evaluación total de TSP o refinamiento de Python
 
 ## Instalación del parche
 
-Descomprime el ZIP `CatOpt-Lean-v0.3-parche.zip` sobre la carpeta de tu
+Descomprime el ZIP `CatOpt-Lean-v0.4-parche-commits.zip` sobre la carpeta de tu
 proyecto `C:\Users\User\Documents\CatOpt-Lean`, conservando `.git/`,
 `.lake/` y `lake-manifest.json`. No es necesario reinstalar Mathlib.
 
@@ -81,10 +102,9 @@ termine correctamente en la revisión exacta que vas a subir a GitHub.
 
 ## Qué hacer después
 
-La siguiente fase (v0.4) deberá sustituir las primitivas opacas por un DSL
-con *acceso controlado* al oráculo, y demostrar cotas de todas las consultas
-que ese lenguaje permite expresar. Después podremos trabajar en GVNS
-adaptativo, poda segura y una evaluación comparativa con MORK/ReSyn.
+La siguiente fase (v0.5) deberá definir un lenguaje restringido de generación
+de vecinos y un control adaptativo, para excluir llamadas opacas al objetivo y
+obtener una cota de consultas de extremo a extremo en ese fragmento.
 
 **Originalidad:** la síntesis guiada por recursos (ReSyn), las metaheurísticas
 generadas por componentes (MORK) y la mónada de costes `TimeM` (CSLib) ya
