@@ -33,3 +33,12 @@ def main : IO Unit := do
   IO.println s!"  Round observations:         {Examples.v04Round.queries}"
   IO.println s!"  Accepted incumbent:        {Examples.v04Round.value.incumbent}"
   IO.println "  Counts cover selector + acceptance, NOT neighbor generation or other opaque operators."
+
+  IO.println ""
+  IO.println "v0.5 — First-order finite moves + fuel-bounded oracle semantics"
+  IO.println s!"  Move tokens per round:      {Examples.finiteLineMoves.length}"
+  IO.println "  Fuel (complete rounds):    3"
+  IO.println s!"  Exact modeled probes:       {Examples.finiteLineResult.queries}"
+  IO.println s!"  Final accepted incumbent:  {Examples.finiteLineResult.value.incumbent.val}"
+  IO.println "  Generators use only finite arithmetic. Counts exclude CPU/Lean reduction work."
+  IO.println "  This is not yet adaptive GVNS or a formally verified TSP solver."
