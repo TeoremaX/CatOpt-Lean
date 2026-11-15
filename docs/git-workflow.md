@@ -72,3 +72,17 @@ run `apply_v06.ps1 -RepoPath <your repo>`. It creates
 After a failed stage, inspect Git status and download a corrected patch if
 necessary. `-Resume` permits overwriting only that stage's files; it never
 resets history. This script does **not** push to GitHub automatically.
+
+
+## v0.7 — Verified-staged commits
+
+From a clean `feat/adaptive-vns-v06` branch with version 0.6.0, run the
+`apply_v07.ps1` packaged in the patch, **from outside the repository**.
+It creates `feat/seeded-gvns-v07` and performs three sequential commits only
+when their checks pass: semantics → executable tests → documentation.
+On failure, inspect `git status` and the compiler output, then use `-Resume`
+with a corrected patch. The script refuses unrelated modifications and never
+performs `git reset`, `git init` or `git push`.
+
+Do not call the branch publish-ready until the exact committed revision builds
+and the GitHub Actions checks pass.

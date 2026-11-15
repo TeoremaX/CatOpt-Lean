@@ -1,13 +1,23 @@
 # Changelog
 
-## 0.6.0 — 2026-11-15 (new Lean proofs pending compilation)
+## 0.7.0 — 2026-11-15 (new Lean proofs pending compilation)
+
+- Add objective-free seed-indexed first-order shaking and deterministic seed update.
+- Compose bounded inner adaptive VND-style descent with two-probe outer elitist acceptance.
+- Specify outer reset/advance, global incumbent monotonicity, and the uniform instrumented-query bound `f * (t * (2*m+4)+2)`.
+- Add fuel/budget certificates, seed-choice and rejection/acceptance examples, and Git verification-gated commits.
+- **Not proven probabilistic:** no stochastic distribution, random-convergence theorem, external benchmark refinement, or production full-GVNS guarantee.
+- **Verification:** v0.6 user-confirmed (`lake build`: 6037 jobs); v0.7 pending Lean compilation.
+
+
+## 0.6.0 — 2026-11-15 (user-confirmed Lean build)
 
 - Added a finite **adaptive VNS-style controller** with an indexed catalog of first-order neighborhoods.
 - Improvement tests are instrumented with two additional `probe` calls.
 - Added proofs of policy reset/advance, incumbent monotonicity and modeled query upper bound `fuel * (2*cap+4)`.
 - Added static `RunBudget`, four-step example, compile-time proof regressions and staged Git commits.
 - **Not full GVNS:** randomized shaking, VND and external benchmarks are not covered.
-- **Verification:** v0.5 user-verified (6031 Lean jobs); v0.6 awaits compilation.
+- **Verification:** user confirmed v0.6 `lake build` (6037 jobs), demo and three commits; warnings are style-related.
 
 
 ## 0.5.0 — 2026-11-15 (user-confirmed Lean build)

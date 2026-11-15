@@ -15,7 +15,7 @@ what is conventional and what remains conjectural.
 
 - [x] Write Lean category, semantics, certificates and proof tests.
 - [x] User confirmed successful Windows `lake build` for the corrected v0.1 core (6007 jobs).
-- [x] User-confirmed green `lake build` through v0.5 (6031 jobs); v0.6 compilation and GitHub CI remain pending.
+- [x] User-confirmed green `lake build` through v0.6 (6037 jobs); remote CI status still requires confirmation.
 - [ ] Commit and pin `lake-manifest.json` after reconciling with the current Mathlib release.
 - [ ] Audit `#print axioms` of major theorems after compilation.
 - [ ] Add `lake test` target if separate tests become necessary.
@@ -86,7 +86,7 @@ valuable even if the category-theory terminology is removed.
   still external (user-verified, 6025 jobs).
 - v0.5 (user-verified): first-order finite moves plus a fuel-bounded
   run; exact query counts for the restricted fragment.
-- v0.6 (written, not yet compiled): deterministic adaptive VNS-style controller with metered policy comparisons, without stochastic shaking or nested VND.
+- v0.6 (user-verified): deterministic adaptive VNS-style controller with metered policy comparisons, without stochastic shaking or nested VND.
 - v0.7+ (research goal): incremental synthesis and sound, finite-grammar-
   relative budget pruning, then held-out combinatorial evaluations.
 
@@ -97,7 +97,7 @@ claimed as novel before dedicated expert assessment.
 
 - [x] **v0.4:** supply feasible neighbors and count all selector/acceptance `probe` effects (user-verified).
 - [x] **v0.5:** first-order finite move grammar and fuel-bounded loop; user-confirmed Lean build (6031 jobs).
-- [ ] **v0.6:** explicit reset/advance adaptive controller and a uniform fuel-based query bound; Lean build and test acceptance still pending. A path-sensitive *exact closed-form* cost theorem remains future work.
+- [x] **v0.6:** explicit reset/advance adaptive controller with uniform fuel-based query bound, Lean-verified by user. A path-sensitive *exact closed-form* cost theorem remains future work.
 - [ ] **v0.7:** connect a nontrivial permutation problem, verified move feasibility and meaningful baselines; avoid equating the independent Python benchmark with the Lean executable.
 - [ ] **v0.8:** synthesis-space pruning with soundness and relative completeness, and experiments against naive enumeration.
 
@@ -115,3 +115,18 @@ Next scientific step: model randomized shaking and inner VND with explicit
 probability and resource interfaces, and prove a refinement relation from
 the closed Lean interpreter to an executable benchmark implementation. The
 word “GVNS” should not be applied to v0.6 as a full-implementation claim.
+
+
+## v0.7 — Seeded nested search (pending Lean validation)
+
+- [x] Write deterministic seed-indexed objective-free shaking interpreter.
+- [x] Compose nested VND-style adaptive run with outer elitist acceptance.
+- [x] State semantic query cap and incumbent monotonicity theorems.
+- [ ] Confirm `lake build` and tests for the exact new revision.
+- [ ] Prove stochastic laws for any genuinely random perturbation mechanism.
+- [ ] Define true reference GVNS/VND termination criteria and correspondence.
+- [ ] Replace toy `Fin` objectives with verified permutation moves and fair
+  combinatorial benchmarks.
+
+**Interpretation:** v0.7 implements a seeded GVNS-style fragment, not a
+probabilistically verified GVNS or publishable novelty claim by itself.

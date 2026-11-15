@@ -4,7 +4,7 @@ title: "CatOpt-Lean: Typed Compositional Search Pipelines"
 type: software
 authors:
   - name: CatOpt-Lean contributors
-version: 0.6.0
+version: 0.7.0
 date-released: 2026-11-15
 license: MIT
 abstract: "Proof-oriented Lean 4 prototype of feasibility-preserving and phase-typed optimization pipelines."

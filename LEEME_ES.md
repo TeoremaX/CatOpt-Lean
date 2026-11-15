@@ -131,8 +131,21 @@ empeora el incumbente.
 
 **Precisión científica:** no es todavía un GVNS completo: falta la perturbación
 aleatoria y la búsqueda VND interna. Tampoco se ha verificado el TSP de Python
-ni hay una cota temporal real. La compilación Lean de v0.6 está **pendiente**;
+ni hay una cota temporal real. La compilación Lean de v0.6 fue **confirmada** (6037 trabajos);
 v0.5 sí compiló en el ordenador del usuario (6031 trabajos).
 
 Para instalar v0.6 conservando los commits, utilizar el ZIP del parche y
 `apply_v06.ps1`; véase `docs/git-workflow.md` y `docs/adaptive-vns.md`.
+
+
+## v0.7 — Perturbación por semilla y búsqueda VND interna
+
+El módulo `CatOpt/DSL/SeededGVNS.lean` compone una perturbación de primer orden
+sin acceso a la función objetivo con un VND acotado y una aceptación elitista
+externa. Demuestra, una vez compilado por Lean, monotonía y la cota de
+consultas instrumentadas `f * (t*(2*m+4)+2)`. El ejemplo pasa de 15 a 15
+y luego a 12, con 28 consultas registradas.
+
+**La semilla es determinista, no una distribución aleatoria formal.**
+Esta capa no verifica el TSP en Python ni el tiempo real. Consulta
+`docs/seeded-gvns.md` y no anuncies una v0.7 verificada sin `lake build`.
