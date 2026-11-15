@@ -15,7 +15,7 @@ what is conventional and what remains conjectural.
 
 - [x] Write Lean category, semantics, certificates and proof tests.
 - [x] User confirmed successful Windows `lake build` for the corrected v0.1 core (6007 jobs).
-- [x] User-confirmed green `lake build` through v0.4 (6025 jobs); v0.5 compilation and GitHub CI remain pending.
+- [x] User-confirmed green `lake build` through v0.5 (6031 jobs); v0.6 compilation and GitHub CI remain pending.
 - [ ] Commit and pin `lake-manifest.json` after reconciling with the current Mathlib release.
 - [ ] Audit `#print axioms` of major theorems after compilation.
 - [ ] Add `lake test` target if separate tests become necessary.
@@ -84,9 +84,9 @@ valuable even if the category-theory terminology is removed.
 - v0.3: `probe`-instrumented acceptance and list-scoring semantics (user-verified).
 - v0.4: a metered best-of-feasible-list selector, with neighbor generation
   still external (user-verified, 6025 jobs).
-- v0.5 (compilation pending): first-order finite moves plus a fuel-bounded
+- v0.5 (user-verified): first-order finite moves plus a fuel-bounded
   run; exact query counts for the restricted fragment.
-- v0.6 (research goal): adaptive GVNS in the same restricted oracle semantics.
+- v0.6 (written, not yet compiled): deterministic adaptive VNS-style controller with metered policy comparisons, without stochastic shaking or nested VND.
 - v0.7+ (research goal): incremental synthesis and sound, finite-grammar-
   relative budget pruning, then held-out combinatorial evaluations.
 
@@ -96,9 +96,22 @@ claimed as novel before dedicated expert assessment.
 ## v0.5 onwards — refined controlled semantics roadmap
 
 - [x] **v0.4:** supply feasible neighbors and count all selector/acceptance `probe` effects (user-verified).
-- [ ] **v0.5:** first-order finite move grammar and fuel-bounded loop; source written; await kernel compilation before checking this item.
-- [ ] **v0.6:** explicit adaptive controller (radius, accept/restart decision, fuel), with a proof of path-sensitive query bounds and tests showing that the controller actually changes neighborhoods.
+- [x] **v0.5:** first-order finite move grammar and fuel-bounded loop; user-confirmed Lean build (6031 jobs).
+- [ ] **v0.6:** explicit reset/advance adaptive controller and a uniform fuel-based query bound; Lean build and test acceptance still pending. A path-sensitive *exact closed-form* cost theorem remains future work.
 - [ ] **v0.7:** connect a nontrivial permutation problem, verified move feasibility and meaningful baselines; avoid equating the independent Python benchmark with the Lean executable.
 - [ ] **v0.8:** synthesis-space pruning with soundness and relative completeness, and experiments against naive enumeration.
 
 The fixed finite move language in v0.5 is intentionally limited. It is not a claim of state-of-the-art search quality or novel Writer semantics.
+
+
+## v0.6 — adaptive neighborhood-change controller
+
+A finite schedule of objective-independent move lists plus a strict-improvement
+reset policy. The controller instruments two additional objective comparisons
+and proves a uniform `fuel * (2*cap+4)` bound on modeled queries. Pending Lean
+compilation before this stage is considered complete.
+
+Next scientific step: model randomized shaking and inner VND with explicit
+probability and resource interfaces, and prove a refinement relation from
+the closed Lean interpreter to an executable benchmark implementation. The
+word “GVNS” should not be applied to v0.6 as a full-implementation claim.

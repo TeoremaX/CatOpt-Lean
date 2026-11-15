@@ -117,3 +117,22 @@ Se ha añadido `CatOpt/DSL/FiniteNeighborhood.lean`: un pequeño DSL sin funcion
 El ejemplo parte de 15, utiliza retrocesos 1 y 2, ejecuta 3 rondas y está diseñado para obtener 9 con 18 consultas de oráculo. Un certificado `FuelBudget 18` acepta el programa y uno de 17 lo rechaza.
 
 **Límites:** no contamos tiempo de CPU, coste de aritmética, evaluaciones del TSP Python ni operadores antiguos opacos; el controlador no es GVNS adaptativo. Más detalles en `docs/finite-neighborhood.md`. La v0.4 ya compiló (6025 trabajos), pero **v0.5 requiere ejecutar `lake build` en tu equipo**. Para actualizar con commits, utiliza el script `apply_v05.ps1` del ZIP de parche.
+
+
+## Versión 0.6 — controlador adaptativo de vecindarios
+
+El módulo `CatOpt/DSL/AdaptiveVNS.lean` introduce un catálogo finito y
+una política de cambio: ante mejora estricta del incumbente vuelve al primer
+vecindario; sin mejora avanza al siguiente. Dos consultas `probe` adicionales
+contabilizan esa decisión. Un catálogo con un máximo certificado de `m`
+movimientos por vecindario y un `fuel = f` tiene una **cota de consultas
+modeladas** de `f * (2*m+4)`. La ejecución conserva la factibilidad y no
+empeora el incumbente.
+
+**Precisión científica:** no es todavía un GVNS completo: falta la perturbación
+aleatoria y la búsqueda VND interna. Tampoco se ha verificado el TSP de Python
+ni hay una cota temporal real. La compilación Lean de v0.6 está **pendiente**;
+v0.5 sí compiló en el ordenador del usuario (6031 trabajos).
+
+Para instalar v0.6 conservando los commits, utilizar el ZIP del parche y
+`apply_v06.ps1`; véase `docs/git-workflow.md` y `docs/adaptive-vns.md`.

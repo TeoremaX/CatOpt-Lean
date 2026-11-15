@@ -1,13 +1,23 @@
 # Changelog
 
-## 0.5.0 — 2026-11-15 (Lean compilation pending)
+## 0.6.0 — 2026-11-15 (new Lean proofs pending compilation)
+
+- Added a finite **adaptive VNS-style controller** with an indexed catalog of first-order neighborhoods.
+- Improvement tests are instrumented with two additional `probe` calls.
+- Added proofs of policy reset/advance, incumbent monotonicity and modeled query upper bound `fuel * (2*cap+4)`.
+- Added static `RunBudget`, four-step example, compile-time proof regressions and staged Git commits.
+- **Not full GVNS:** randomized shaking, VND and external benchmarks are not covered.
+- **Verification:** v0.5 user-verified (6031 Lean jobs); v0.6 awaits compilation.
+
+
+## 0.5.0 — 2026-11-15 (user-confirmed Lean build)
 
 - Added `FiniteNeighborhood.lean`, a first-order move language on `Fin (n + 1)` with objective-independent neighbor generation.
 - Added a fuel-bounded instrumented runner with exact semantic counts `fuel × (2 × move_count + 2)` and incumbent non-worsening.
 - Added `FuelBudget`, a certificate connecting an execution to a proved bound on registered objective probes.
 - Added one finite executable example, proof regressions, publication-scope notes and three-stage Git update script.
 - **Not adaptive GVNS:** the neighborhood grammar is fixed; total *real* cost and external code remain outside the proof.
-- **Status:** v0.4 was user-verified (6025-job Lean build, demo, no-obvious-sorry, 5/5 Python tests). v0.5 awaits `lake build`.
+- **Verified by user:** v0.5 `lake build` succeeded (6031 jobs), the executable demo ran, and three commits were created with a clean Git tree.
 
 ## 0.4.0 — 2026-11-15 (user-confirmed Lean build)
 

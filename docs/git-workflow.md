@@ -54,3 +54,21 @@ The script stops at the first failed Lean command and leaves the relevant files 
 ## v0.5 staged patch
 
 From a clean **v0.4** branch, run the patch's `apply_v05.ps1`. It creates `feat/finite-neighborhood-v05` and attempts three commits: semantics; executable tests; documentation. The script compiles the Lean file and then the full project **before** committing. It never performs `git push`, `git reset`, or `git add -A`. If a stage fails, it leaves only that stage's files for inspection; after downloading a fixed patch, rerun with `-Resume` to explicitly allow replacing those files. Once verified, push with `git push -u origin feat/finite-neighborhood-v05` and open a PR.
+
+
+## v0.6 staged commits
+
+Starting from a **clean and committed v0.5** on
+`feat/finite-neighborhood-v05`, extract the v0.6 patch *outside* the repo and
+run `apply_v06.ps1 -RepoPath <your repo>`. It creates
+`feat/adaptive-vns-v06`, then performs three verification-gated commits:
+
+1. `feat(lean): add resource-bounded adaptive VNS controller` — new semantics.
+2. `test(lean): check adaptive neighborhood policy and query bounds` — examples,
+   tests, public imports and demo.
+3. `docs: document adaptive controller scope and research limits` — release
+   documentation.
+
+After a failed stage, inspect Git status and download a corrected patch if
+necessary. `-Resume` permits overwriting only that stage's files; it never
+resets history. This script does **not** push to GitHub automatically.

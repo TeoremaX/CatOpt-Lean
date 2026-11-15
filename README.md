@@ -2,9 +2,9 @@
 
 **Typed compositional search pipelines with feasibility and incumbent-monotonicity certificates**
 
-> Research-oriented Lean 4 + Mathlib prototype · numerical TSP case studies in Python · v0.5.0
+> Research-oriented Lean 4 + Mathlib prototype · numerical TSP case studies in Python · v0.6.0
 >
-> **Verification status:** The user confirmed the full **v0.4** project built successfully on Windows using Lean 4.32.0 (`6025 jobs`), including the metered finite-list selector, `check_no_sorry.py`, and 5/5 Python tests. **The new v0.5 proofs still require a Lean compilation on the target machine**; local source review is not kernel verification.
+> **Verification status:** The user confirmed that **v0.5** built successfully under Lean 4.32.0 (`6031 jobs`) and the finite-neighborhood demo executed, with three local Git commits and a clean tree. **v0.6 has not yet been compiled in Lean**; do not cite its new theorems as kernel-verified until `lake build` passes on the actual revision.
 
 ## Research question
 
@@ -57,7 +57,8 @@ CatOpt-Lean/
 │   │   ├── Synthesis.lean              raw checker, round generator, budget certificates
 │   │   ├── Resources.lean              counted acceptance probes and erasure theorem
 │   │   ├── OracleLocalSearch.lean      metered feasible-list selection
-│   │   └── FiniteNeighborhood.lean     data-only move DSL + fueled rounds
+│   │   ├── FiniteNeighborhood.lean     data-only move DSL + fueled rounds
+│   │   └── AdaptiveVNS.lean           adaptive finite-neighborhood controller + bound
 │   ├── Algorithms/
 │   │   ├── GRASP.lean                   seeded GRASP-style rounds
 │   │   ├── GVNS.lean                    fixed-neighbourhood VNS schedule
@@ -67,13 +68,15 @@ CatOpt-Lean/
 │   │   ├── Synthesis.lean            shared synthesis demo parameters
 │   │   ├── Resources.lean            instrumented examples
 │   │   ├── OracleLocalSearch.lean    feasible-list selector example
-│   │   └── FiniteNeighborhood.lean   end-to-end finite move example
+│   │   ├── FiniteNeighborhood.lean   end-to-end finite move example
+│   │   └── AdaptiveVNS.lean           adaptive policy demo
 │   └── Tests/
 │       ├── Proofs.lean                 existing proof checks
 │       ├── Synthesis.lean              synthesis/compiler regression tests
 │       ├── Resources.lean              instrumented-query theorem checks
 │       ├── OracleLocalSearch.lean      v0.4 proof regression checks
-│       └── FiniteNeighborhood.lean     v0.5 move/fuel proof checks
+│       ├── FiniteNeighborhood.lean     v0.5 move/fuel proof checks
+│       └── AdaptiveVNS.lean           adaptive-policy proof checks
 ├── Main.lean                           Lean demo
 ├── experiments/
 │   ├── tsp.py                           independent TSP benchmark engine
@@ -195,7 +198,8 @@ The new finite runner is not yet adaptive GVNS. See
 | v0.2 synthesis | Typed action checker, round generation, syntactic size, budget certificate and incumbent guarantee | User-confirmed successful 6013-job Lean build |
 | v0.3 instrumented oracle | Closed list-scoring query count, acceptance-probe count, interpreter erasure and incumbent monotonicity | User-confirmed 6019-job Lean build |
 | v0.4 local selector | Exact selection/acceptance query count and non-worsening for a supplied feasible neighbor list | User-confirmed successful 6025-job Lean build |
-| v0.5 finite move runner | Oracle-free move generator, exact per-round and fuel-bound probe counts, budget certificate | New code: `lake build` pending |
+| v0.5 finite move runner | Oracle-free move generator, exact per-round and fuel-bound probe counts, budget certificate | User-confirmed 6031-job Lean build |
+| v0.6 adaptive controller | Strict-improvement reset / otherwise advance, policy probes, bounded catalog and fuel-budget theorem | **Unverified until `lake build`** |
 | TSP | Feasible benchmark implementations, repeatable seeds, exact small-instance optima | Executed Python tests; **not Lean verified** |
 | General convergence | No claim | Not implemented |
 | Experimental superiority | No claim | Requires independent evaluation |
@@ -224,6 +228,25 @@ These papers motivate compositional mathematics but **do not certify that CatOpt
 
 ## Project status
 
-**0.5.0 — first-order finite moves / Lean verification pending.** The user verified the full v0.4 project with Lean 4.32.0 on 2026-11-15 (6025 jobs), executable demonstration and 5/5 Python tests. The new v0.5 modules are source-reviewed but await compilation. The restricted finite move interpreter counts its own explicit oracle effects; older opaque generators and primitives remain unverified. See `docs/verification-status.md`.
+**0.6.0 — adaptive finite VNS-style controller / Lean verification pending.** The user verified the full v0.5 project with Lean 4.32.0 on 2026-11-15 (6031 jobs), including its demo, and saved three local Git commits. This v0.6 addition awaits compilation. All resource counters refer only to explicit modeled oracle interactions; opaque generators, external Python code and CPU time remain unverified. See `docs/verification-status.md`.
 
 Contributions, counterexamples and critical mathematical review are welcome. Licensed under MIT.
+
+
+## v0.6 — Adaptive finite neighborhood control
+
+`CatOpt/DSL/AdaptiveVNS.lean` adds a finite catalog whose neighborhood lengths
+are certified, with strict-improvement reset and otherwise index advancement.
+The policy comparison uses **two more `probe` effects** per active step. For
+`fuel = f` and maximum `cap = m` moves per neighborhood the **modeled** query
+count satisfies `queries ≤ f * (2*m + 4)`, and the incumbent never worsens.
+The controller stops changing state once all neighborhoods are exhausted.
+
+The v0.6 example starts at 15, alternates `hold` and `backward 2` via
+reset/advance, and is expected to finish at 11 with 24 measured observations
+after four steps. **These are regression expectations until Lean accepts the
+v0.6 proofs on the target machine.**
+
+This is **not yet full randomized GVNS** (no stochastic shake or inner VND).
+For exact statements and research limitations, see
+[`docs/adaptive-vns.md`](docs/adaptive-vns.md).
