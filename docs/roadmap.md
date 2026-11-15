@@ -14,10 +14,11 @@ what is conventional and what remains conjectural.
 ## M1 — Trusted formal foundation (highest priority)
 
 - [x] Write Lean category, semantics, certificates and proof tests.
-- [ ] Install Lean toolchain, generate a manifest and obtain **green `lake build`**.
+- [x] User confirmed successful Windows `lake build` for the corrected v0.1 core (6007 jobs).
+- [ ] Obtain **green `lake build`** for the new v0.2 synthesis modules and GitHub CI; commit generated manifest.
 - [ ] Audit `#print axioms` of major theorems after compilation.
 - [ ] Add `lake test` target if separate tests become necessary.
-- [ ] Add a counterexample test showing raw `Shake` need not be non-worsening.
+- [x] Add a counterexample test showing raw `Shake` need not be non-worsening.
 
 **Success criterion:** GitHub CI shows a green Lean build with zero sorry/admit.
 
@@ -62,7 +63,8 @@ negative and null results, and the chosen performance comparisons are fair.
 
 ## M5 — Potential research contribution
 
-- [ ] Design a typed, resource/contract-aware generator of candidate programs.
+- [x] Prototype typed candidate generation and a proof-carrying *static estimated-work* filter.
+- [ ] Prove contracts on *actual* evaluations and generalized operator effects (not just declared estimates).
 - [ ] Search the synthesis space, avoiding duplicate semantic programs using
   sound rewrites.
 - [ ] Demonstrate at least one empirically useful new combination or
@@ -72,3 +74,21 @@ negative and null results, and the chosen performance comparisons are fair.
 
 **Success criterion:** a specific theorem or experimental insight remains
 valuable even if the category-theory terminology is removed.
+
+
+## Revised research milestones after the 2026-11-15 originality audit
+
+- v0.2: typed finite grammar + **declared** static work estimates. Verified
+  by user in Lean (6013 jobs).
+- v0.3: `probe`-instrumented semantics with a closed counted scoring client
+  and acceptance erasure proof (compiler check pending).
+- v0.4 (hypothesis): replace the opaque local-search interface with an
+  oracle-controlled DSL; ensure **all modeled objective observations** flow
+  through that effect and prove relevant dynamic upper bounds.
+- v0.5 (hypothesis): an adaptive GVNS in the same controlled semantics.
+- v0.6 (hypothesis): incremental synthesis and *sound, finite-grammar relative*
+  budget pruning; comparisons with naive enumeration and MORK/ReSyn-inspired
+  baselines, followed by held-out combinatorial problems.
+
+No theorem proves a performance advantage, and no contribution should be
+claimed as novel before dedicated expert assessment.

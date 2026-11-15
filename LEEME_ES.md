@@ -1,106 +1,91 @@
-# CatOpt-Lean — Guía rápida en español
+# CatOpt-Lean v0.3 — guía en español
 
-**Qué has recibido:** un repositorio de investigación preparado para publicarse,
-con código Lean 4, una propuesta matemática rigurosa, un lenguaje de
-composición de algoritmos, tres familias de búsqueda, un experimento TSP con
-resultados reproducibles y un borrador de artículo técnico de nueve páginas.
+**Qué es:** proyecto de investigación experimental en Lean 4 + Mathlib sobre
+lenguajes tipados para algoritmos de búsqueda, preservación de factibilidad,
+aceptación elitista y síntesis de programas de optimización. Contiene además
+un benchmark TSP independiente en Python y un manuscrito técnico anterior
+que **todavía no** describe v0.3.
 
-## La idea científica esencial
+## Qué está verificado
 
-La intuición `Shake → LocalSearch → Accept` no es suficiente si cada etapa
-solo recibe una solución. Hay que distinguir la solución *incumbente* (la
-mejor aceptada hasta ahora) de la *candidata* (que puede empeorar al
-perturbarla).
+- **v0.2:** el usuario ejecutó `lake build` en Windows (6013 trabajos),
+  `lake exe catopt-demo` (cinco recetas), `check_no_sorry.py` y los cinco
+  tests Python. Todo pasó el 15/11/2026.
+- **v0.3:** los nuevos archivos están preparados y revisados como fuentes,
+  pero **todavía no han pasado por un compilador Lean** en el entorno donde
+  se han generado. La verificación nueva debe completarse en tu ordenador.
 
-CatOpt-Lean define:
+## Matemáticas fundamentales
 
-1. Una categoría de espacios cuyos morfismos preservan factibilidad.
-2. Un estado de búsqueda con incumbente y candidato factibles.
-3. Un DSL indexado por fases: `ready → candidate → improved → ready`.
-4. Una interpretación matemática que respeta composición, identidad y
-   asociatividad a nivel semántico.
-5. Un teorema general: el **coste del incumbente** no aumenta durante
-   programas correctamente tipados con aceptación elitista.
+Hay dos soluciones factibles en el estado: incumbente y candidato. Una
+perturbación puede empeorar el candidato sin empeorar el incumbente. La
+aceptación elitista elige la mejor de las dos según la función objetivo y
+sincroniza los dos campos. `CatOpt/DSL/Search.lean` contiene el teorema
+`program_monotone` para operadores que preservan factibilidad.
 
-Este teorema **no dice** que el candidato mejore siempre, ni que se alcance el
-óptimo global. La categoría no se presenta como un resultado novedoso en sí.
+El DSL distingue tres etapas:
 
-## Estado real del proyecto
+```text
+ready → candidate → improved → ready
+```
 
-- **Python:** cinco tests ejecutados con éxito.
-- **Experimentos:** 135 ejecuciones (15 semillas por algoritmo e instancia),
-  tres instancias TSP pequeñas, óptimos exactos mediante Held–Karp.
-- **Artículo:** PDF de nueve páginas y código fuente LaTeX incluidos.
-- **Lean:** los archivos con declaraciones y pruebas están escritos, pero no
-  se han podido comprobar con el compilador en este entorno. Antes de poner
-  "formally verified" en GitHub, **ejecuta `lake build` y comprueba que
-  pasa**. GitHub Actions está configurado precisamente para hacerlo.
+No pretendemos haber inventado la composición de algoritmos; el valor
+investigador dependerá de propiedades nuevas, representaciones fieles y
+experimentos rigurosos.
 
-## Instalar y ejecutar
+## Novedad en v0.3: qué mide el contador
 
-1. Instala Git, VS Code y la extensión de Lean 4. Instala Lean mediante
-   [elan](https://lean-lang.org/install/). Puedes trabajar en Windows
-   directamente o en WSL2.
-2. Descomprime el ZIP. Abre la carpeta `CatOpt-Lean` en VS Code.
-3. Abre una terminal en esa carpeta y ejecuta:
+`CatOpt/DSL/Resources.lean` define `probe P x`, que consulta explícitamente
+`P.cost x` y registra una observación. `probeMany` es un cliente cerrado
+que solo consulta el objetivo mediante `probe`: el teorema establece
+`queries = xs.length` y los valores coinciden con `xs.map P.cost`.
 
-```bash
-lake update
-lake exe cache get
+`runMetered` interpreta el DSL preexistente y registra dos consultas por
+`accept`. Los teoremas expresan que el resultado es el mismo que el del
+intérprete anterior y que se conserva la monotonía del incumbente.
+
+**Advertencia:** `construct`, `shake`, `destroyRepair` y `localSearch` aún son
+funciones opacas que *pueden consultar el objetivo sin pasar por `probe`*.
+El contador de `runMetered` registra únicamente las observaciones explícitas
+de aceptación, **no el total de evaluaciones de la metaheurística**. No hay
+prueba sobre tiempo real, RAM, evaluación total de TSP o refinamiento de Python.
+
+## Archivos para leer
+
+- `CatOpt/DSL/Resources.lean`: semántica de consultas y pruebas.
+- `CatOpt/Tests/Resources.lean`: ejemplos comprobables por Lean.
+- `CatOpt/Examples/Resources.lean`: ejemplos ejecutables.
+- `docs/resources.md`: especificación de las garantías y límites.
+- `docs/novelty-audit.md`: antecedentes y auditoría de originalidad.
+- `docs/publication-plan.md`: plan científico y criterios de publicación.
+- `docs/verification-status.md`: qué compilaciones realmente han ocurrido.
+
+## Instalación del parche
+
+Descomprime el ZIP `CatOpt-Lean-v0.3-parche.zip` sobre la carpeta de tu
+proyecto `C:\Users\User\Documents\CatOpt-Lean`, conservando `.git/`,
+`.lake/` y `lake-manifest.json`. No es necesario reinstalar Mathlib.
+
+Ejecuta desde PowerShell:
+
+```powershell
 lake build
 lake exe catopt-demo
+py tools/check_no_sorry.py
+py -m unittest discover -s experiments -p "test_*.py" -v
 ```
 
-4. Para los experimentos (solo necesitas Python 3.11+):
+Si falla la compilación, el módulo nuevo todavía no está verificado.
+No publiques afirmaciones de verificación de v0.3 hasta que `lake build`
+termine correctamente en la revisión exacta que vas a subir a GitHub.
 
-```bash
-python3 -m unittest discover -s experiments -p 'test_*.py' -v
-python3 experiments/run_benchmark.py --runs 15 --budget 5000
-```
+## Qué hacer después
 
-En Windows, si `python3` no se reconoce, utiliza `py` o `python`. Después del
-primer `lake update` correcto, añade al commit el `lake-manifest.json` que
-se haya generado: es importante para fijar dependencias.
+La siguiente fase (v0.4) deberá sustituir las primitivas opacas por un DSL
+con *acceso controlado* al oráculo, y demostrar cotas de todas las consultas
+que ese lenguaje permite expresar. Después podremos trabajar en GVNS
+adaptativo, poda segura y una evaluación comparativa con MORK/ReSyn.
 
-## Orden recomendado para aprender y revisar el código
-
-- **Día 1:** `CatOpt/Basic.lean` y `CatOpt/Operators.lean`.
-- **Día 2:** `CatOpt/Category.lean` y las leyes categóricas.
-- **Día 3:** `CatOpt/Properties.lean`, especialmente la aceptación.
-- **Día 4:** `CatOpt/DSL/Syntax.lean` y `CatOpt/DSL/Semantics.lean`.
-- **Día 5:** `CatOpt/DSL/Search.lean`, `program_monotone`, `denote_run`.
-- **Día 6:** las tres familias `CatOpt/Algorithms/` y el caso de estudio.
-- **Día 7:** `docs/formulation.md`, `docs/related-work.md` y el artículo.
-
-## Subir a GitHub
-
-Desde la carpeta raíz y después de revisar que `lake build` pasa:
-
-```bash
-git init
-git branch -M main
-git add .
-git commit -m "Initial CatOpt-Lean research prototype"
-git remote add origin https://github.com/TU_USUARIO/CatOpt-Lean.git
-git push -u origin main
-```
-
-Primero crea el repositorio vacío en GitHub. Si prefieres usar GitHub CLI,
-consulta `docs/github.md`.
-
-## Cómo contárselo a un investigador
-
-> Estoy desarrollando un framework de optimización composicional en Lean 4.
-> Formalizo una categoría de transformaciones que preservan factibilidad,
-> un DSL tipado por fases y propiedades estructurales sobre incumbentes.
-> Lo interesante no es que los algoritmos compongan funciones, sino imponer
-> contratos que sobreviven a la composición y estudiar hasta qué punto
-> permiten sintetizar algoritmos válidos automáticamente. Por ahora el
-> modelo es un prototipo con aceptación elitista y las pruebas aún deben
-> superar la verificación final del compilador.
-
-**Para convertirlo en un resultado investigador serio:** terminar la
-compilación Lean, ampliar a espacios heterogéneos, formalizar un funtor desde
-la categoría libre de programas (no solo la interpretación), verificar 2-opt
-y VND de forma fiel, y estudiar bibliografía de hiperheurísticas y diseño
-automático de algoritmos.
+**Originalidad:** la síntesis guiada por recursos (ReSyn), las metaheurísticas
+generadas por componentes (MORK) y la mónada de costes `TimeM` (CSLib) ya
+existen. El hecho de combinarlas en Lean no basta por sí solo para publicar.

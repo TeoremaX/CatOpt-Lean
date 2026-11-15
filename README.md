@@ -2,9 +2,9 @@
 
 **Typed compositional search pipelines with feasibility and incumbent-monotonicity certificates**
 
-> Research-oriented Lean 4 + Mathlib prototype · numerical TSP case studies in Python · v0.1.0
+> Research-oriented Lean 4 + Mathlib prototype · numerical TSP case studies in Python · v0.3.0
 >
-> **Verification status:** Lean proofs are *written but not yet compiler-verified in the development environment that produced this snapshot*. Run `lake build` (or inspect GitHub Actions) before describing this revision as formally verified. The Python tests have been executed separately.
+> **Verification status:** The user confirmed the full **v0.2** project built successfully on Windows using Lean 4.32.0 (`6013 jobs`), the demo produced five certified recipes, `check_no_sorry.py` passed, and 5/5 Python tests passed. The **new v0.3 instrumentation layer is not yet Lean-compiled** in the authoring environment; validate it with `lake build`.
 
 ## Research question
 
@@ -53,13 +53,21 @@ CatOpt-Lean/
 │   ├── DSL/
 │   │   ├── Syntax.lean                 generic typed syntax
 │   │   ├── Semantics.lean              categorical interpretation and laws
-│   │   └── Search.lean                 phase-typed search DSL and soundness
+│   │   ├── Search.lean                 phase-typed search DSL and soundness
+│   │   ├── Synthesis.lean              raw checker, round generator, budget certificates
+│   │   └── Resources.lean              counted oracle observations and erasure theorem
 │   ├── Algorithms/
 │   │   ├── GRASP.lean                   seeded GRASP-style rounds
 │   │   ├── GVNS.lean                    fixed-neighbourhood VNS schedule
 │   │   └── IteratedGreedy.lean         destroy/repair rounds
-│   ├── Examples/Finite.lean            executable finite-state semantics
-│   └── Tests/Proofs.lean               compile-time proof checks
+│   ├── Examples/
+│   │   ├── Finite.lean               executable finite-state semantics
+│   │   ├── Synthesis.lean            shared synthesis demo parameters
+│   │   └── Resources.lean            instrumented examples
+│   └── Tests/
+│       ├── Proofs.lean                 existing proof checks
+│       ├── Synthesis.lean              synthesis/compiler regression tests
+│       └── Resources.lean              instrumented-query theorem checks
 ├── Main.lean                           Lean demo
 ├── experiments/
 │   ├── tsp.py                           independent TSP benchmark engine
@@ -97,15 +105,55 @@ python3 experiments/run_benchmark.py --runs 2 --budget 1500 --instances grid12
 
 The benchmark requires no third-party Python packages. Results are emitted to `experiments/results.csv` (ignored by Git). Executed smoke and reference batches (with a 135-row result CSV) are described in `docs/experiments.md` but are not evidence of algorithmic superiority.
 
+## v0.2: generator and static budget certificates
+
+The new `CatOpt/DSL/Synthesis.lean` provides two approaches. `compileClosed`
+checks an untyped list of actions, rejecting invalid stage transitions
+(`shake → accept` is rejected). `enumerate` constructs complete, phase-typed
+rounds directly, filtered by an additive **user-declared static work estimate**.
+`BoundedRecipe` includes a proof that the declared estimate fits the chosen
+budget. This is **not** a runtime, evaluation-count or quality guarantee.
+
+The generator has structural theorems for program size, incumbent
+non-deterioration and candidate/incumbent synchronization. The demo now prints
+five candidate recipes for a small fixed palette/budget. See
+[`docs/synthesis.md`](docs/synthesis.md) for precise definitions, proofs,
+limitations and related work. Generated algorithms are neither ranked by
+fitness nor claimed to be new.
+
+## v0.3: explicit instrumented oracle observations
+
+`CatOpt/DSL/Resources.lean` adds a small Writer-like structure `Metered`,
+`probe` as the *explicit* objective-query effect, and two checked clients:
+
+- A **closed list scorer** `probeMany`: precisely one `probe` per entry; Lean
+  proves its return values and the exact number of instrumented observations.
+  `ProbeBudget.queries_le` proves a genuine bound for this restricted client.
+  `AcceptanceBudget.queries_le` separately bounds *recorded acceptance probes*
+  for generated rounds (not total algorithmic evaluations).
+- A **search-state instrumentation** `runMetered`: acceptance uses two `probe`
+  calls. An erasure theorem proves that `.value` agrees with existing `Search.run`,
+  and a theorem counts exactly `2 × acceptCount` instrumented acceptance probes.
+
+**Fundamental limitation:** old `Primitives` (including `localSearch`) remain
+opaque and may perform **unrecorded** objective calls. The second theorem is
+*not* a bound on total algorithm evaluations, and must never be described as one.
+See [`docs/resources.md`](docs/resources.md) and the
+[`novelty audit`](docs/novelty-audit.md), including the existing CSLib `TimeM`.
+For scientific milestones and publication criteria see
+[`docs/publication-plan.md`](docs/publication-plan.md).
+
 ## What is formally stated, and what is not?
 
 | Component | Mathematical claim | Current evidence |
 |---|---|---|
-| Category | Identity, associativity, proof-preserving composition | Lean source (requires `lake build` verification) |
-| Operator | Non-worsening closed under composition and finite iteration | Lean source (requires `lake build`) |
-| DSL | Well-typed phases and interpretation preserving categorical laws | Lean source (requires `lake build`) |
-| Search | Incumbent cost does not increase under any well-typed program | Lean source (requires `lake build`) |
-| GRASP/GVNS/IG | Finite sequences with well-typed operators and generic proof | Lean source (requires `lake build`) |
+| Category | Identity, associativity, proof-preserving composition | Confirmed by user in v0.1 Windows build |
+| Operator | Non-worsening closed under composition and finite iteration | Confirmed by user in v0.1 Windows build |
+| DSL | Well-typed phases and interpretation preserving categorical laws | Confirmed by user in v0.1 Windows build |
+| Search | Incumbent cost does not increase under any well-typed program | Confirmed by user in v0.1 Windows build |
+| GRASP/GVNS/IG | Finite sequences with well-typed operators and generic proof | Confirmed by user in v0.1 Windows build |
+| v0.2 synthesis | Typed action checker, round generation, syntactic size, budget certificate and incumbent guarantee | User-confirmed successful 6013-job Lean build |
+| v0.3 instrumented oracle | Closed list-scoring query count, acceptance-probe count, interpreter erasure and incumbent monotonicity | New Lean source; compilation pending |
 | TSP | Feasible benchmark implementations, repeatable seeds, exact small-instance optima | Executed Python tests; **not Lean verified** |
 | General convergence | No claim | Not implemented |
 | Experimental superiority | No claim | Requires independent evaluation |
@@ -134,6 +182,6 @@ These papers motivate compositional mathematics but **do not certify that CatOpt
 
 ## Project status
 
-**0.1.0 — research prototype / verification pending.** The formal library and executable benchmark are provided; the Lean toolchain could not be installed in the authoring environment. The continuous-integration workflow is configured to make compilation status publicly observable as soon as the repository is pushed. Do not add a green "formally verified" badge until CI actually passes. See `docs/verification-status.md`.
+**0.3.0 — resource-instrumentation scaffold / new verification pending.** The user verified the entire v0.2 project with Lean 4.32.0 on 2026-11-15 (6013 jobs) and Python unit tests (5/5). The new v0.3 modules are source-reviewed but cannot yet be described as compiler-verified. The instrumentation does not cover opaque primitive internals. See `docs/verification-status.md`.
 
 Contributions, counterexamples and critical mathematical review are welcome. Licensed under MIT.
