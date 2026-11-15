@@ -25,3 +25,11 @@ def main : IO Unit := do
   IO.println s!"  One round (acceptance) probes: {Examples.meteredRoundExample.queries}"
   IO.println "  The opaque local-search operator is NOT instrumented here."
   IO.println "  Counters do not bound its hidden evaluations, CPU time, or real costs."
+
+  IO.println ""
+  IO.println "v0.4 — Verified finite-neighborhood selection (explicit observations)"
+  IO.println s!"  Supplied feasible neighbors: {Examples.v04Candidates.length}"
+  IO.println s!"  Selection observations:     {Examples.v04Selection.queries}"
+  IO.println s!"  Round observations:         {Examples.v04Round.queries}"
+  IO.println s!"  Accepted incumbent:        {Examples.v04Round.value.incumbent}"
+  IO.println "  Counts cover selector + acceptance, NOT neighbor generation or other opaque operators."
