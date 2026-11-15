@@ -11,6 +11,7 @@ import CatOpt.DSL.OracleLocalSearch
 import CatOpt.DSL.FiniteNeighborhood
 import CatOpt.DSL.AdaptiveVNS
 import CatOpt.DSL.SeededGVNS
+import CatOpt.TSP.TwoOpt
 import CatOpt.Algorithms.GRASP
 import CatOpt.Algorithms.GVNS
 import CatOpt.Algorithms.IteratedGreedy
@@ -21,6 +22,7 @@ import CatOpt.Examples.OracleLocalSearch
 import CatOpt.Examples.FiniteNeighborhood
 import CatOpt.Examples.AdaptiveVNS
 import CatOpt.Examples.SeededGVNS
+import CatOpt.Examples.TSP
 import CatOpt.Tests.Proofs
 import CatOpt.Tests.Synthesis
 import CatOpt.Tests.Resources
@@ -28,5 +30,6 @@ import CatOpt.Tests.OracleLocalSearch
 import CatOpt.Tests.FiniteNeighborhood
 import CatOpt.Tests.AdaptiveVNS
 import CatOpt.Tests.SeededGVNS
+import CatOpt.Tests.TSP
 
 /-! Public library API for CatOpt-Lean. -/

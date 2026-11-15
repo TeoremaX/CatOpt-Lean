@@ -64,3 +64,12 @@ def main : IO Unit := do
   IO.println s!"  Next outer index:            {Examples.seededResult.value.index}"
   IO.println "  Seed evolution is deterministic, not a proved random distribution."
   IO.println "  Counts refer to the closed finite DSL, not Python or wall-clock cost."
+
+  IO.println ""
+  IO.println "v0.8 — Permutation-valued TSP tours and two-opt segment reversal"
+  IO.println s!"  Four-city crossing cost:    {TSP.tourCost Examples.squareInstance Examples.crossingTour}"
+  IO.println s!"  Reversed-segment cost:     {TSP.tourCost Examples.squareInstance (TSP.twoOpt Examples.crossingTour Examples.middleSegment)}"
+  IO.println s!"  Accepted incumbent cost:  {TSP.tourCost Examples.squareInstance Examples.squareRound.value.incumbent}"
+  IO.println s!"  Instrumented query count: {Examples.squareRound.queries}"
+  IO.println "  Tour validity follows from Equiv.Perm; reversing twice restores the route."
+  IO.println "  No claim of Python refinement or TSP optimality is implied."
