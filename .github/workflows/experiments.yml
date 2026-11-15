@@ -1,0 +1,19 @@
+name: Python benchmark tests
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  benchmark-tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Unit tests
+        run: python3 -m unittest discover -s experiments -p 'test_*.py' -v
+      - name: Reproducibility smoke benchmark
+        run: python3 experiments/run_benchmark.py --runs 2 --budget 1500 --instances grid12 --out /tmp/catopt-smoke.csv

@@ -1,0 +1,584 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,longtable,enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{graphicx}
+\newtheorem{definition}{Definition}
+\newtheorem{proposition}{Proposition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{remark}{Remark}
+\newcommand{\den}[1]{\left[\!\left[ #1 \right]\!\right]}
+\newcommand{\HH}{\mathrm{Hom}}
+\title{CatOpt-Lean: Typed Compositional Search Pipelines\\with Feasibility and Incumbent-Monotonicity Contracts}
+\author{Research prototype --- working manuscript}
+\date{15 November 2026 --- draft; formal build pending}
+\begin{document}
+\maketitle
+\begin{abstract}
+Metaheuristic optimizers are often presented as pipelines of reusable
+operators---construction, perturbation, local improvement and acceptance.
+Interpreting all operators as endomorphisms of a solution space supplies a
+composition law but hides a crucial operational distinction: a perturbation
+may worsen a candidate, whereas an elitist acceptance rule compares it with
+the previous incumbent. We present a small, intentionally restricted formal
+model in Lean~4 and Mathlib based on a category of feasibility-preserving
+maps, an indexed syntax for phase-correct search pipelines, and a semantics
+that preserves categorical composition equations. The proposed main theorem
+states that the incumbent objective does not increase under any well-typed
+pipeline when each primitive preserves feasibility and acceptance is elitist.
+We express GRASP-like, fixed-schedule VNS and Iterated Greedy rounds using the
+same syntax, and provide separate, non-verified TSP implementations in
+Python for exploratory empirical analysis. We distinguish syntax-level
+compositionality from the construction of an actual free category and avoid
+claims of stochastic convergence or algorithmic novelty. Crucially, at the
+time of this draft the Lean source has \emph{not yet been compiled in the
+authoring environment}; it is a candidate formalization, not a reported
+kernel-checked proof result.
+\end{abstract}
+
+\section{Introduction}
+Optimization frameworks routinely combine building blocks. A variable
+neighborhood search (VNS) method may perturb a solution, descend to a local
+minimum and apply an acceptance criterion; an Iterated Greedy method may
+destroy a partial solution and repair it before descent. GRASP alternates
+greedy-randomized construction and local improvement. The attraction of a
+common language is clear: operators could be selected, composed, checked and
+possibly synthesized.
+
+A first proposal would declare $\operatorname{Shake},\operatorname{LS},
+\operatorname{Accept}:S\rightarrow S$ and write
+$\operatorname{VNS}=\operatorname{Accept}\circ
+\operatorname{LS}\circ\operatorname{Shake}$. This yields an endomorphism
+monoid, but essentially every program is a function that composes with
+other functions. The category-theoretic vocabulary has not yet supplied a
+constraint, theorem or design principle. Moreover, a unary acceptance
+function operating only on the perturbed solution cannot, in general,
+compare that candidate to an earlier incumbent unless extra state is
+provided.
+
+Our contribution is therefore limited but specific: we separate incumbent
+and candidate; require certified feasibility-preserving primitive functions;
+restrict well-formed pipelines with phase-indexed types; provide a denotational
+categorical interpretation; and state an incumbent monotonicity theorem
+parametric in the primitive implementations. These ideas should be regarded
+as a foundation for investigation rather than a novel categorical result.
+
+\paragraph{Scope.}
+The Lean library targets natural-number-valued single-objective minimization
+with elitist acceptance, not stochastic convergence or all possible
+metaheuristics. The experimental Python algorithms are not extracted from
+Lean and are not covered by the formal statements. We do not claim
+outperformance, novelty or verified correctness of external TSP code.
+
+\section{Three candidate mathematical models}
+We evaluated three starting points.
+
+\paragraph{Unrestricted endomorphisms.}
+For a solution type $S$, let arrows be functions $S\to S$; their composition
+is associative and has the identity map. This is useful for an ordinary
+functional implementation, but offers no protection against infeasible
+solutions, no typed distinction between search phases, and no nontrivial
+relation between candidate and incumbent. Properties such as ``both maps
+are non-worsening, therefore so is their composition'' follow immediately
+from order transitivity, not from an essential new categorical insight.
+
+\paragraph{Invariant-preserving maps and indexed syntax.}
+Instead, equip each state type with a feasibility predicate and restrict
+arrows to maps preserving it. Make algorithm steps an indexed syntax with
+explicit input/output phase types. Distinguish an incumbent from a candidate
+and make acceptance the only primitive allowed to update the incumbent.
+This formulation provides useful, compositional correctness contracts and
+can be encoded directly in Lean. It is selected for the prototype.
+
+\paragraph{Probabilistic effects.}
+A genuinely stochastic operator is more naturally a kernel
+$S\to\mathcal{D}(S)$ or a Kleisli arrow for a suitable distribution
+monad. The composition law must account for dependent sampling. Expected
+progress, irreducibility, ergodicity or stochastic approximation would then
+require additional assumptions. The current Lean prototype instead uses
+explicit seed arguments to deterministic arrows and makes no claim of a
+probability-measure semantics. Implementing this third approach too early
+would add complexity without substantiating the initial invariant theorem.
+
+\section{Category of feasible spaces}
+\begin{definition}[Feasible space]
+A feasible space is a pair $X=(|X|,F_X)$ consisting of a type $|X|$ and a
+predicate $F_X:|X|\rightarrow\mathrm{Prop}$.
+\end{definition}
+\begin{definition}[Feasibility-preserving morphism]
+A morphism $f:X\to Y$ consists of a total map
+$|f|:|X|\to |Y|$ with a witness of
+\begin{equation}
+ \forall x\in |X|,\quad F_X(x)\Rightarrow F_Y(f(x)).
+\end{equation}
+\end{definition}
+
+Identity is the identity function with its trivial preservation proof.
+For $f:X\to Y$ and $g:Y\to Z$ define $(g\circ f)(x)=g(f(x))$;
+feasibility of its result follows by applying the witnesses for $f$ and
+$g$ in sequence.
+
+\begin{proposition}[Category laws]
+Feasible spaces and feasibility-preserving morphisms form a category
+$\mathsf{Feas}$ under the proposed identity and composition.
+\end{proposition}
+\begin{proof}
+For each feasible $x$, identity preserves $F_X(x)$. Composition preserves
+feasibility as above. The underlying maps satisfy
+$\mathrm{id}\circ f=f=f\circ\mathrm{id}$ and
+$(h\circ g)\circ f=h\circ(g\circ f)$ by function extensionality.
+Witness fields are propositions and are proof-irrelevant, so equality of
+underlying maps suffices for equality of morphism structures. The Lean
+prototype defines a `CategoryTheory.Category' instance using these laws.
+\end{proof}
+
+This category is a familiar construction, not an invention. Its role is to
+record and compose data-independent feasibility guarantees for typed
+interfaces. It supports maps between different state spaces, although the
+first search DSL interprets each phase with the same proof-carrying runtime
+carrier.
+
+\section{Problems, operators and state}
+A minimization problem is a triple $P=(S,F,f)$, where $S$ is a state type,
+$F:S\to\mathrm{Prop}$ is feasibility, and $f:S\to\mathbb{N}$ is the
+objective. A legal solution operator is a feasible endomorphism of
+$(S,F)$; such an operator need not reduce $f$. Let
+\begin{equation}
+ \mathrm{NW}(u)\quad\Longleftrightarrow\quad
+ \forall x, F(x)\Rightarrow f(u(x))\le f(x).
+\end{equation}
+For legal $u$ and $v$, if both are non-worsening then
+$f(v(u(x)))\le f(u(x))\le f(x)$, so $v\circ u$ is non-worsening.
+An elementary induction gives this property for any finite iteration.
+
+More important is the two-track search state
+\begin{equation}
+ \mathrm{SearchState}(P)=\{(i,c):S\times S\mid F(i)\land F(c)\},
+\end{equation}
+with incumbent $i$ and candidate $c$.
+For a certified feasible primitive $u:S\to S$ define
+\begin{align}
+ \mathrm{reset}_u(i,c)&=(i,u(i)),\\
+ \mathrm{transform}_u(i,c)&=(i,u(c)).
+\end{align}
+The first is appropriate for constructing or perturbing a fresh candidate
+from the incumbent, while the second models candidate-only descent.
+
+Define a deterministic elitist choice
+\begin{equation}
+ \mathrm{choose}(i,c)=
+ \begin{cases}
+ c &\text{if }f(c)\le f(i),\\
+ i &\text{otherwise.}
+ \end{cases}
+\end{equation}
+Acceptance is
+$\mathrm{accept}(i,c)=(\mathrm{choose}(i,c),\mathrm{choose}(i,c))$.
+Both selected states are feasible and
+\begin{equation}
+ f(\mathrm{choose}(i,c))\le f(i).
+\end{equation}
+Crucially, there is no restriction on whether $f(u(i))$ may be larger
+than $f(i)$ for a perturbation $u$.
+
+\begin{theorem}[Monotone incumbent for a single search round]
+For any legal perturbation $p$ and candidate-local operator $d$, the
+composite $\mathrm{accept}\circ\mathrm{transform}_{d}\circ
+\mathrm{reset}_{p}$ does not increase incumbent objective.
+\end{theorem}
+\begin{proof}
+Both `reset' and `transform' leave the incumbent field unchanged.
+The final acceptance selects a state no more expensive than the previous
+incumbent. Therefore the composite is incumbent-monotone, independently of
+the quality of $p$ or $d$.
+\end{proof}
+
+\section{A phase-typed language}
+Let the set of phases be
+$\mathsf{Stage}=\{\mathsf{ready},\mathsf{candidate},\mathsf{improved}\}$.
+The typed generator signature contains:
+\begin{align*}
+ \mathrm{construct}(s)&:\mathsf{ready}\to\mathsf{candidate},\\
+ \mathrm{shake}(k)&:\mathsf{ready}\to\mathsf{candidate},\\
+ \mathrm{destroyRepair}(k)&:\mathsf{ready}\to\mathsf{candidate},\\
+ \mathrm{localSearch}&:\mathsf{candidate}\to\mathsf{improved},\\
+ \mathrm{accept}&:\mathsf{improved}\to\mathsf{ready}.
+\end{align*}
+The indices enforce that the output phase of one operation equals the input
+phase of the next. In particular, a program attempting to accept before
+local search fails to typecheck. This restriction is intentional; not every
+operational search scheme passes through this precise three-step protocol.
+
+\begin{definition}[Typed program]
+Given a signature $\Sigma$ assigning primitive edges $\Sigma(a,b)$, the
+type $\mathrm{Program}_{\Sigma}(a,b)$ is freely generated as a syntax tree
+by $\mathrm{skip}:a\to a$, atomic edges
+$\mathrm{atom}(e):a\to b$, and composition
+$\mathrm{seq}(p,q):a\to c$ when $p:a\to b$ and $q:b\to c$.
+\end{definition}
+
+\paragraph{Not yet a free category.}
+The raw AST constructors do not equate
+$\mathrm{seq}(\mathrm{seq}(p,q),r)$ with
+$\mathrm{seq}(p,\mathrm{seq}(q,r))$.
+Thus calling the raw syntax a strict category would be incorrect.
+A categorical interpretation obeys equations even when the syntax does not.
+A future quotient by associativity and units, or a representation as paths,
+would give the corresponding free category and enable an explicit Mathlib
+`Functor' record.
+
+\section{Semantics and generic soundness}
+Given a semantic category $\mathcal{C}$, map each syntactic object $a$ to
+an object $I(a)$, and each generator $e:a\to b$ to an arrow
+$I(e):I(a)\to I(b)$. Define
+\begin{equation}
+ \den{\mathrm{skip}}=\mathrm{id},\qquad
+ \den{\mathrm{atom}(e)}=I(e),\qquad
+ \den{\mathrm{seq}(p,q)}=\den q\circ\den p.
+\end{equation}
+The associativity and unit equations hold by the category axioms.
+For search programs, each runtime search state is a proof-carrying object;
+thus any total function between two such state types is feasibility-preserving
+with respect to the exterior predicate `True'. Real candidate/incumbent
+feasibility is stored in the internal dependent record rather than inferred
+from `True' itself. This choice separates protocol indexing from runtime
+invariants and exposes an area for future heterogeneous-type work.
+
+\begin{theorem}[Parametric incumbent monotonicity]
+Let $P$ be a minimization problem and let the concrete generator assignments
+map each construction, shake, destroy--repair and local-search primitive to
+a feasibility-preserving operator. Assume `accept' is the elitist rule above.
+Then for every well-typed search program $p:a\to b$ and search state $s$,
+\begin{equation}
+ f\bigl(\mathrm{incumbent}(\den{p}(s))\bigr)
+ \le f\bigl(\mathrm{incumbent}(s)\bigr).
+\end{equation}
+\end{theorem}
+\begin{proof}
+By induction on syntax. The identity program leaves its input unchanged.
+Every atomic construction/perturbation/candidate descent leaves the
+incumbent unchanged; the acceptance atom never worsens it. If $p$ and
+$q$ separately satisfy the property, then
+\[
+ f(I(q(p(s))))\le f(I(p(s)))\le f(I(s)).
+\]
+Transitivity yields the composite case. No assumption is needed that
+perturbations or descent procedures improve the candidate.
+\end{proof}
+
+The proof is useful but not a convergence theorem. It does not imply that
+any step improves the incumbent strictly. A sequence can stagnate forever;
+finite or infinite execution may remain in suboptimal regions. If the
+acceptance policy sometimes admits a worse incumbent, as in simulated
+annealing, the theorem must be weakened or changed.
+
+\section{Algorithm representations}
+The generic syntax represents a GRASP-style round by
+\[\mathrm{construct}(s)\,;\,\mathrm{localSearch}\,;\,\mathrm{accept}.\]
+A fixed-schedule VNS round is
+\[\mathrm{shake}(k)\,;\,\mathrm{localSearch}\,;\,\mathrm{accept}.\]
+The Iterated Greedy analogue is
+\[\mathrm{destroyRepair}(d)\,;\,\mathrm{localSearch}\,;\,\mathrm{accept}.\]
+Program sequencing and finite folds combine rounds without changing the
+generic soundness theorem. However, real adaptive GVNS changes the radius
+based on the accepted result; this control structure is absent from the
+current Lean DSL. A Lean finite-state demonstration has a single bounded
+descent operator and is not full VND. The separate Python implementations
+use a genuine two-neighborhood (2-opt and insertion) VND and an adaptive
+GVNS radius; no refinement or semantic-equivalence proof links them to
+Lean. Those limitations are important whenever using the repo in a
+research presentation.
+
+\section{Experimental protocol and preliminary measurements}
+As a proof-of-execution check we implemented symmetric, closed-tour TSP
+solvers in Python, using deterministic seeds and three original small
+coordinate datasets. The objective is the sum of rounded Euclidean edge
+lengths. Held--Karp dynamic programming computes exact optimum costs on
+each dataset. A full objective-evaluation counter limits runs; the same
+budget is used for each method, but greedy construction's distance accesses
+are not charged as complete objective evaluations.
+
+The first smoke experiment used three seeds, 1500 full objective evaluations
+and two small instances. On \texttt{grid12} the exact optimum was 214 and
+GRASP--VND achieved 214 for all three seeds; GVNS achieved the optimum in
+two of three and Iterated Greedy in one of three. On \texttt{ring14} the
+exact optimum was 236; the respective optimal-hit counts were three, two
+and two. These numbers are sanity checks, not a statistically defensible
+comparison of algorithm quality. The full table, including means and
+standard deviations, is in \texttt{docs/experiments.md}.
+
+Meaningful analysis needs many more seeds, diverse instances, fair accounting
+for computational effort, baseline algorithms, ablation studies and
+confidence intervals. We should expect conclusions to depend on tuning,
+instance class and budget. No claim is made here that a categorical model
+improves empirical quality.
+
+\section{Related work and positioning}
+Fong, Spivak and Tuy\'eras~\cite{fong2019backprop} established a genuine
+compositional connection between parameterized functions and learning
+updates. Gavranovi\'c~\cite{gavranovic2024fundamental} develops broader
+compositional machinery for deep learning, while
+Gavranovi\'c et al.~\cite{gavranovic2024architectures} study algebraic
+architecture constraints. Shiebler~\cite{shiebler2021generalized}
+explores generalizations of derivative-based optimization and their
+invariances. These sources illuminate what a mathematically substantial
+categorical result can look like, but none is simply a certificate of novelty
+for the present optimization DSL.
+
+Before a research contribution can be claimed, a systematic comparison with
+hyper-heuristics, grammar-guided algorithm design, typed genetic programming,
+automated configuration and formal verification of optimization algorithms
+is mandatory. The current results are closely aligned with familiar
+techniques from dependent types, program logic and algebraic semantics.
+It would be mistaken to argue that the presence of a category or functor-like
+interpretation alone makes the framework novel or algorithmically stronger.
+
+\section{Directions for stronger contributions}
+The first extension is to quotient or normalize compositional syntax and
+build an explicit functor from its path category to the category of feasible
+state transformations. Distinct state types (populations, partial solutions,
+individual solutions and archive summaries) would demonstrate where a typed
+categorical interface gives more than a set of endomorphisms.
+
+Second, contracts could describe resources and uncertainty. A graded effect
+could accumulate objective evaluations or probabilistic sampling cost.
+For non-elitist acceptance, a useful theorem might bound expected potential
+instead of demanding monotonicity on every run. Formalizing these effects
+would clarify whether categories enriched in preorders or Kleisli categories
+provide real benefits.
+
+Third, a well-typed synthesis engine could enumerate or optimize candidate
+algorithms while rejecting infeasible or ill-formed compositions. Sound
+rewrites would avoid searching different syntax trees with the same
+semantics. Demonstrating practical benefit would require comparing this
+process with established grammar-guided hyper-heuristics, not simply
+reporting the generation of new strings of operators.
+
+Finally, a Lean-certified TSP permutation type, verified 2-opt/insertion
+operators and a formal connection to executable code would upgrade this
+from a theorem about an abstract DSL into a more faithful optimizer
+verification. Success would require proving invariants at the interfaces
+where correctness currently rests only on Python tests.
+
+\section{Limitations and conclusion}
+The framework proves only properties induced by its specific definitions
+and primitive contracts. In particular, no probabilistic semantics,
+global optimality, runtime bound, strict improvement or guarantee of
+algorithm discovery follows. The three algorithm families share a
+restricted protocol rather than a complete behavioral semantics.
+
+The principal technical point is the separation of candidate and incumbent:
+it makes it mathematically honest to permit worsening perturbations while
+certifying non-worsening elitist incumbent trajectories. Typed composition
+makes this property modular. The categorical structure gives a uniform
+semantic language but has not yet yielded a theorem inaccessible to simpler
+algebraic reasoning.
+
+At the date of this manuscript, \textbf{Lean compilation has not been run in
+the authoring environment}. The project therefore contains proposed
+formal proof scripts awaiting kernel checking in CI, not a completed
+verification claim. The Python benchmark unit tests have run successfully;
+their outcomes are deliberately reported separately from formal results.
+
+\section*{Reproducibility checklist}
+\begin{enumerate}[leftmargin=*]
+\item Toolchain and Mathlib are both declared at \texttt{v4.32.0}; generate
+      and commit the dependency lockfile after the first successful build.
+\item Run \texttt{lake build} to typecheck the formal library and its examples.
+\item Run \texttt{lake exe catopt-demo} for the finite-state example.
+\item Run \texttt{python3 -m unittest discover -s experiments} for Python tests.
+\item Run \texttt{python3 experiments/run\_benchmark.py --runs 15 --budget 5000}.
+\item Do not interpret green Python CI as formal verification of Python;
+      do not interpret a Lean code listing as a successful proof check.
+\end{enumerate}
+
+
+\appendix
+\section{Proof obligations and the software architecture}
+
+A formalization of the preceding mathematical objects must distinguish
+three forms of correctness. First, \emph{well-formedness} says that an
+operation's input and output phase indices match. Second, \emph{feasibility}
+requires that a primitive map transport proofs of the relevant admissibility
+predicate. Third, \emph{performance contracts} concern the cost of an
+incumbent rather than candidate feasibility. The implementation stores these
+obligations in different locations so a future extension can replace one
+without silently weakening another.
+
+The central Lean modules are:
+\begin{center}
+\small
+\begin{tabular}{p{3.2cm}p{9.0cm}}
+\toprule
+Module & Responsibility \\
+\midrule
+\texttt{Basic} & Explicit objective and dependent candidate/incumbent feasibility proofs \\
+\texttt{Category} & Invariant-preserving arrows, identity, composition and Mathlib category instance \\
+\texttt{Operators} & Non-worsening predicate, closure under composition, finite iteration \\
+\texttt{Properties} & Reset, candidate-only transformation, acceptance, incumbent monotonicity \\
+\texttt{DSL.Syntax} & Typed generic abstract syntax trees \\
+\texttt{DSL.Semantics} & Interpretation into semantic categories and equational laws \\
+\texttt{DSL.Search} & Phase-specific primitive signature, categorical interpretation, structural theorem \\
+\texttt{Algorithms} & Three compositional program-building schemes \\
+\texttt{Examples} & Concrete 21-state demonstration, not a benchmark optimizer \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Interface-level proof reuse.}
+Suppose a new search space is introduced with a strong geometric constraint,
+e.g. permutations that visit every city exactly once. Once a primitive
+operator has supplied a map and a feasibility-preservation witness, the
+search-level theorem does not inspect how that primitive was implemented.
+A construction might use greedy restricted candidate lists; perturbation
+might use random swaps; repair might use specialized insertion. These
+implementations contribute obligations to prove tour feasibility, not a
+new copy of the composite monotonicity proof.
+
+\paragraph{What Lean must actually check.}
+In particular, the authoring process cannot establish the absence of
+elaboration or universe issues by visually inspecting a code listing.
+The intended acceptance test is that \texttt{lake build} successfully
+elaborates and kernel-checks every declaration, including category instances,
+indexed interpretations and all regression examples, against a pinned Lean
+and Mathlib dependency graph. The auxiliary source scan detects unfinished
+proof tokens but proves no theorem. The two checks should not be conflated.
+
+\section{A minimal counterexample and the correct invariant}
+Consider the feasible domain $S=\{0,\ldots,20\}$ with objective $f(x)=x$.
+Let the perturbation be $p(x)=(x+1)\bmod 21$. Then
+$f(p(0))=1>0=f(0)$, so $p$ is not non-worsening. Nonetheless, $p$ maps
+feasible inputs to feasible outputs. The model intentionally permits it
+as a categorical morphism; otherwise a framework advertised for
+perturbation-based metaheuristics would exclude its principal building
+block.
+
+Initialize the two-track state at $(i,c)=(0,0)$, reset the candidate using
+$p$, apply any feasible candidate descent $d$ and finally accept. If
+the transformed candidate $d(1)$ has cost at most zero, it becomes the
+new incumbent; otherwise the incumbent remains zero. In both cases
+$\operatorname{cost}(i')\le\operatorname{cost}(i)$. The preservation result
+rests on the selection rule rather than the perturbation's properties.
+
+This separation also clarifies a false extension: if an acceptance rule
+allows worsening incumbents with positive probability, its trajectory is
+not pathwise non-worsening. An assertion about expected cost would be a
+separate theorem, typically requiring a probability distribution on
+transitions, integrability and a suitable drift assumption. A deterministic
+seed value does not by itself supply this mathematical structure.
+
+\section{Worked example of syntax and interpretation}
+
+A composition of a fixed GRASP-like round and a VNS-like round has the
+shape
+\begin{align*}
+ p={}&\mathrm{seq}\bigl(\mathrm{seq}(\mathrm{construct}(s),\mathrm{localSearch}),
+        \mathrm{accept}\bigr);\\
+ q={}&\mathrm{seq}\bigl(\mathrm{seq}(\mathrm{shake}(k),\mathrm{localSearch}),
+        \mathrm{accept}\bigr).
+\end{align*}
+Both start and end in the \emph{ready} phase, so $p;q$ and $q;p$ are
+well-typed. The type system alone does not assert these two programs are
+semantically equivalent; order can affect the resulting incumbent and
+runtime. It only supplies valid intermediate interfaces and compositional
+meaning.
+
+Because the interpreter is defined structurally, reassociation of syntax
+leaves its denotation unchanged:
+\[
+ \den{(p;q);r}=\den{r}\circ(\den{q}\circ\den{p})
+                   =(\den{r}\circ\den{q})\circ\den{p}
+                   =\den{p;(q;r)}.
+\]
+This is an example of a \emph{semantic equation} proved from category laws.
+The unquotiented expressions remain distinct AST values. Extending the
+library with a quotient or a normal form for typed paths would allow such
+equations to justify the automatic elimination of redundant syntactic
+programs in future synthesis experiments.
+
+There is an important subtlety about ``stage as object.'' Each stage
+currently maps to the same proof-carrying runtime carrier; different stage
+names are a protocol distinction in syntax, not necessarily different
+semantic types. This semantics is non-faithful in general and cannot by
+itself demonstrate the benefits of heterogeneous object composition.
+A meaningful next test would compose a builder of partial TSP tours with
+a repairer producing feasible complete tours, and then a local search
+operator whose domain is restricted to complete permutations.
+
+\section{Experimental reproducibility and threats to validity}
+
+In the numerical study, $n$ is small enough for an exact Held--Karp
+benchmark. Full tours use a fixed origin city, visit all other cities once,
+and return to the origin. Distances use rounded Euclidean edge weights.
+Holding the full-objective-evaluation limit constant makes comparisons
+more intelligible, but it is not equivalent to holding runtime constant:
+greedy construction, perturbation, and insertion neighborhoods perform
+many edge-distance queries, and different implementations incur different
+Python overhead. Therefore, the experiment logs an evaluation budget rather
+than claiming equal computational complexity or fair wall-clock cost.
+
+The larger executed reference batch used 15 seeds and 5000 objective
+calls. Its outcomes were:
+\begin{center}
+\small
+\begin{tabular}{llrrr}
+\toprule
+Instance (optimal cost) & Method & Mean cost & Standard deviation & Optimal hits \\
+\midrule
+\texttt{grid12} (214) & GRASP--VND & 214.00 & 0.00 & 15/15 \\
+ & GVNS & 214.47 & 1.75 & 14/15 \\
+ & Iterated Greedy & 216.93 & 4.23 & 10/15 \\
+\texttt{ring14} (236) & GRASP--VND & 236.00 & 0.00 & 15/15 \\
+ & GVNS & 236.00 & 0.00 & 15/15 \\
+ & Iterated Greedy & 237.00 & 2.00 & 12/15 \\
+\texttt{cluster16} (304) & GRASP--VND & 304.00 & 0.00 & 15/15 \\
+ & GVNS & 304.00 & 0.00 & 15/15 \\
+ & Iterated Greedy & 304.00 & 0.00 & 15/15 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The table chiefly reveals a \emph{ceiling effect}: almost all methods
+solve these small synthetic examples optimally. Thus it is a useful
+reproducibility exercise and a poor discriminator of method quality.
+A larger evaluation should record heterogeneous instances, algorithm
+parameters, seed pairing, wall-clock and memory measures, confidence
+intervals, and references for best-known values. Publication-grade claims
+would require a new benchmark design.
+
+\begin{thebibliography}{9}
+\bibitem{fong2019backprop}
+B. Fong, D. I. Spivak, and R. Tuy\'eras.
+\newblock Backprop as Functor: A Compositional Perspective on Supervised Learning.
+\newblock \emph{LICS}, 2019. \url{https://arxiv.org/abs/1711.10455}.
+
+\bibitem{gavranovic2024fundamental}
+B. Gavranovi\'c.
+\newblock Fundamental Components of Deep Learning: A Category-Theoretic Approach.
+\newblock Thesis, 2024. \url{https://arxiv.org/abs/2403.13001}.
+
+\bibitem{gavranovic2024architectures}
+B. Gavranovi\'c, P. Lessard, A. J. Dudzik, T. von Glehn,
+J. G. M. Ara\'ujo, and P. Veli\v{c}kovi\'c.
+\newblock Position: Categorical Deep Learning is an Algebraic Theory of All Architectures.
+\newblock \emph{Proceedings of Machine Learning Research}, 235:15209--15241, 2024.
+\newblock \url{https://proceedings.mlr.press/v235/gavranovic24a.html}.
+
+\bibitem{shiebler2021generalized}
+D. Shiebler.
+\newblock Generalized Optimization: A First Step Towards Category Theoretic Learning Theory.
+\newblock arXiv:2109.10262, 2021. \url{https://arxiv.org/abs/2109.10262}.
+
+\bibitem{mathlib4}
+The Mathlib Community.
+\newblock Mathlib: The Mathematical Library of Lean 4.
+\newblock \url{https://github.com/leanprover-community/mathlib4}.
+\end{thebibliography}
+\end{document}

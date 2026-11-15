@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use the software, cite the repository version/commit."
+title: "CatOpt-Lean: Typed Compositional Search Pipelines"
+type: software
+authors:
+  - name: CatOpt-Lean contributors
+version: 0.1.0
+date-released: 2026-11-15
+license: MIT
+abstract: "Proof-oriented Lean 4 prototype of feasibility-preserving and phase-typed optimization pipelines."
