@@ -2,9 +2,9 @@
 
 **Typed compositional search pipelines with feasibility and incumbent-monotonicity certificates**
 
-> Research-oriented Lean 4 + Mathlib prototype · numerical TSP case studies in Python · v0.4.0
+> Research-oriented Lean 4 + Mathlib prototype · numerical TSP case studies in Python · v0.5.0
 >
-> **Verification status:** The user confirmed the full **v0.3** project built successfully on Windows using Lean 4.32.0 (`6019 jobs`), including v0.3 instrumentation, `check_no_sorry.py`, and 5/5 Python tests. **New v0.4 code has not been Lean-compiled in the authoring environment**; run `lake build` before claiming it is formally verified.
+> **Verification status:** The user confirmed the full **v0.4** project built successfully on Windows using Lean 4.32.0 (`6025 jobs`), including the metered finite-list selector, `check_no_sorry.py`, and 5/5 Python tests. **The new v0.5 proofs still require a Lean compilation on the target machine**; local source review is not kernel verification.
 
 ## Research question
 
@@ -56,7 +56,8 @@ CatOpt-Lean/
 │   │   ├── Search.lean                 phase-typed search DSL and soundness
 │   │   ├── Synthesis.lean              raw checker, round generator, budget certificates
 │   │   ├── Resources.lean              counted acceptance probes and erasure theorem
-│   │   └── OracleLocalSearch.lean      metered feasible-list selection
+│   │   ├── OracleLocalSearch.lean      metered feasible-list selection
+│   │   └── FiniteNeighborhood.lean     data-only move DSL + fueled rounds
 │   ├── Algorithms/
 │   │   ├── GRASP.lean                   seeded GRASP-style rounds
 │   │   ├── GVNS.lean                    fixed-neighbourhood VNS schedule
@@ -65,12 +66,14 @@ CatOpt-Lean/
 │   │   ├── Finite.lean               executable finite-state semantics
 │   │   ├── Synthesis.lean            shared synthesis demo parameters
 │   │   ├── Resources.lean            instrumented examples
-│   │   └── OracleLocalSearch.lean    finite-neighborhood example
+│   │   ├── OracleLocalSearch.lean    feasible-list selector example
+│   │   └── FiniteNeighborhood.lean   end-to-end finite move example
 │   └── Tests/
 │       ├── Proofs.lean                 existing proof checks
 │       ├── Synthesis.lean              synthesis/compiler regression tests
 │       ├── Resources.lean              instrumented-query theorem checks
-│       └── OracleLocalSearch.lean      v0.4 proof regression checks
+│       ├── OracleLocalSearch.lean      v0.4 proof regression checks
+│       └── FiniteNeighborhood.lean     v0.5 move/fuel proof checks
 ├── Main.lean                           Lean demo
 ├── experiments/
 │   ├── tsp.py                           independent TSP benchmark engine
@@ -164,6 +167,22 @@ algorithms. See [`docs/oracle-local-search.md`](docs/oracle-local-search.md).
 For incremental Git commits, see [`docs/git-workflow.md`](docs/git-workflow.md)
 and the separate v0.4 patch ZIP with `apply_v04.ps1`.
 
+## v0.5: restricted finite moves and a fuel-bounded search loop
+
+`CatOpt/DSL/FiniteNeighborhood.lean` defines a **data-only** neighborhood
+language (`hold`, `forward k`, `backward k`) on `Fin (n + 1)`. Unlike the
+old callback-based neighbor supplier, its `generate` function does not receive
+the objective. Each round executes the v0.4 metered selector and acceptance;
+`run` repeats that round with explicit fuel. The intended exact semantic bound is
+`fuel * (2 * moves.length + 2)` recorded oracle queries, independent of the
+objective and initial state. A proof-bearing `FuelBudget` certifies that bound.
+
+This closes a restricted part of the previous **neighbor-generation trust
+boundary**, but only for the new first-order move interpreter. It does not
+verify the old opaque heuristics, a Python optimizer or real machine runtime.
+The new finite runner is not yet adaptive GVNS. See
+[`docs/finite-neighborhood.md`](docs/finite-neighborhood.md).
+
 ## What is formally stated, and what is not?
 
 | Component | Mathematical claim | Current evidence |
@@ -175,7 +194,8 @@ and the separate v0.4 patch ZIP with `apply_v04.ps1`.
 | GRASP/GVNS/IG | Finite sequences with well-typed operators and generic proof | Confirmed by user in v0.1 Windows build |
 | v0.2 synthesis | Typed action checker, round generation, syntactic size, budget certificate and incumbent guarantee | User-confirmed successful 6013-job Lean build |
 | v0.3 instrumented oracle | Closed list-scoring query count, acceptance-probe count, interpreter erasure and incumbent monotonicity | User-confirmed 6019-job Lean build |
-| v0.4 local selector | Exact selection/acceptance query count and non-worsening for a supplied feasible neighbor list | Pending v0.4 `lake build` |
+| v0.4 local selector | Exact selection/acceptance query count and non-worsening for a supplied feasible neighbor list | User-confirmed successful 6025-job Lean build |
+| v0.5 finite move runner | Oracle-free move generator, exact per-round and fuel-bound probe counts, budget certificate | New code: `lake build` pending |
 | TSP | Feasible benchmark implementations, repeatable seeds, exact small-instance optima | Executed Python tests; **not Lean verified** |
 | General convergence | No claim | Not implemented |
 | Experimental superiority | No claim | Requires independent evaluation |
@@ -204,6 +224,6 @@ These papers motivate compositional mathematics but **do not certify that CatOpt
 
 ## Project status
 
-**0.4.0 — finite-neighborhood selector / Lean verification pending.** The user verified the entire v0.3 project with Lean 4.32.0 on 2026-11-15 (6019 jobs) and Python tests (5/5). The newly added v0.4 modules are source-reviewed, but their compilation still needs to be confirmed. Neither v0.3 nor v0.4 counts calls hidden in opaque generators or primitives. See `docs/verification-status.md`.
+**0.5.0 — first-order finite moves / Lean verification pending.** The user verified the full v0.4 project with Lean 4.32.0 on 2026-11-15 (6025 jobs), executable demonstration and 5/5 Python tests. The new v0.5 modules are source-reviewed but await compilation. The restricted finite move interpreter counts its own explicit oracle effects; older opaque generators and primitives remain unverified. See `docs/verification-status.md`.
 
 Contributions, counterexamples and critical mathematical review are welcome. Licensed under MIT.

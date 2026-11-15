@@ -109,3 +109,11 @@ obtener una cota de consultas de extremo a extremo en ese fragmento.
 **Originalidad:** la síntesis guiada por recursos (ReSyn), las metaheurísticas
 generadas por componentes (MORK) y la mónada de costes `TimeM` (CSLib) ya
 existen. El hecho de combinarlas en Lean no basta por sí solo para publicar.
+
+## Versión 0.5 — movimientos finitos y presupuesto de consultas
+
+Se ha añadido `CatOpt/DSL/FiniteNeighborhood.lean`: un pequeño DSL sin funciones de callback para generar vecinos en `Fin (n + 1)`, seguido de selección y aceptación instrumentadas. La ejecución de `fuel` rondas demuestra, cuando Lean compile las nuevas pruebas, que el número de consultas registradas es `fuel * (2 * moves.length + 2)` y que el incumbente no empeora.
+
+El ejemplo parte de 15, utiliza retrocesos 1 y 2, ejecuta 3 rondas y está diseñado para obtener 9 con 18 consultas de oráculo. Un certificado `FuelBudget 18` acepta el programa y uno de 17 lo rechaza.
+
+**Límites:** no contamos tiempo de CPU, coste de aritmética, evaluaciones del TSP Python ni operadores antiguos opacos; el controlador no es GVNS adaptativo. Más detalles en `docs/finite-neighborhood.md`. La v0.4 ya compiló (6025 trabajos), pero **v0.5 requiere ejecutar `lake build` en tu equipo**. Para actualizar con commits, utiliza el script `apply_v05.ps1` del ZIP de parche.

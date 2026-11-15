@@ -1,6 +1,15 @@
 # Changelog
 
-## 0.4.0 — 2026-11-15 (Lean compilation pending)
+## 0.5.0 — 2026-11-15 (Lean compilation pending)
+
+- Added `FiniteNeighborhood.lean`, a first-order move language on `Fin (n + 1)` with objective-independent neighbor generation.
+- Added a fuel-bounded instrumented runner with exact semantic counts `fuel × (2 × move_count + 2)` and incumbent non-worsening.
+- Added `FuelBudget`, a certificate connecting an execution to a proved bound on registered objective probes.
+- Added one finite executable example, proof regressions, publication-scope notes and three-stage Git update script.
+- **Not adaptive GVNS:** the neighborhood grammar is fixed; total *real* cost and external code remain outside the proof.
+- **Status:** v0.4 was user-verified (6025-job Lean build, demo, no-obvious-sorry, 5/5 Python tests). v0.5 awaits `lake build`.
+
+## 0.4.0 — 2026-11-15 (user-confirmed Lean build)
 
 - Added a finite, typed feasible-neighborhood selector with explicit `probe` calls.
 - Added exact oracle-count and value-erasure theorems for selection, plus a non-worsening proof.
@@ -8,7 +17,7 @@
 - Added examples, compile-time proof regressions, and executable demonstration.
 - Added staged Git patch/commit workflow to validate each change before committing.
 - **Trust boundary:** neighbor generation and existing opaque primitives remain unmetered.
-- **Status:** v0.3 was user-verified (6019-job Lean build, demo, 5/5 Python tests); v0.4 has not been compiled here.
+- **Verified by user:** v0.4 `lake build` succeeded (6025 jobs), demo executed, no-obvious-sorry check passed and all five Python tests passed; three local commits created.
 
 ## 0.3.0 — 2026-11-15 (user-confirmed Lean build)
 

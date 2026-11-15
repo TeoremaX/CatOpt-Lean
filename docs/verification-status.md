@@ -1,10 +1,11 @@
 # Verification status (updated 2026-11-15)
 
-- **v0.3 confirmed:** user ran `lake build` successfully (6019 jobs), `lake exe catopt-demo`, `py tools/check_no_sorry.py` and all five Python tests.
-- **v0.4 pending:** new `OracleLocalSearch.lean` and regression proofs have been source-reviewed, but this authoring environment has **no Lean/Lake compiler** and cannot download one. Execute the staged patch script or run the verification commands on Lean 4.32.0.
-- The `check_no_sorry.py` scanner checks for common unfinished-proof markers, **not** soundness; successful `lake build` is the relevant kernel-validation evidence.
-- This repository does not verify calls inside external neighborhood generators, original opaque heuristics, or independent Python TSP implementations.
+- **v0.4 confirmed:** user ran Lean 4.32.0 `lake build` successfully (6025 jobs), `lake exe catopt-demo`, `py tools/check_no_sorry.py`, and all five Python tests. Three incremental v0.4 Git commits were made locally on `feat/oracle-local-search` and the working tree was clean.
+- **v0.5 pending:** `FiniteNeighborhood.lean` plus new examples/regressions have been source-reviewed, but the authoring environment lacks a working Lean/Lake compiler. Run the v0.5 staged script and require `lake build` before asserting that these new theorems are kernel-checked.
+- The `check_no_sorry.py` scanner is only a syntax/text check, **not** a substitute for kernel verification.
+- Exact query counts apply to the **new closed finite move interpreter** only. They do not count CPU time, Lean reduction steps, Python code or oracle calls in previous opaque primitives.
+- The v0.5 finite runner has fixed moves and a fixed number of rounds. It is **not adaptive GVNS**.
 
-## After a successful v0.4 build
+## Evidence checklist after a successful v0.5 build
 
-Record the exact Git commit SHA, toolchain, `lake build` output, and CI run URL here before citing verification in a publication.
+Record `lean --version`, `git rev-parse HEAD`, successful `lake build`, demo output, test results and GitHub CI status. Compare against the baseline from v0.4 rather than the old 6019-job v0.3 figure.

@@ -50,3 +50,7 @@ If you are not using a feature branch, substitute your actual branch name. Pull 
 ## On errors
 
 The script stops at the first failed Lean command and leaves the relevant files in your worktree **uncommitted**, allowing you to inspect the error. Do not rerun it blindly after partially applying commits; inspect `git log` and `git status`. The script never resets or deletes existing Git history.
+
+## v0.5 staged patch
+
+From a clean **v0.4** branch, run the patch's `apply_v05.ps1`. It creates `feat/finite-neighborhood-v05` and attempts three commits: semantics; executable tests; documentation. The script compiles the Lean file and then the full project **before** committing. It never performs `git push`, `git reset`, or `git add -A`. If a stage fails, it leaves only that stage's files for inspection; after downloading a fixed patch, rerun with `-Resume` to explicitly allow replacing those files. Once verified, push with `git push -u origin feat/finite-neighborhood-v05` and open a PR.

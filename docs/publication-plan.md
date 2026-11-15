@@ -42,11 +42,13 @@ comparison against established frameworks.
 - **After v0.3:** prototype illustrates instrumentation; no total resource claim.
 - **After v0.4:** closed finite-list selection and metered acceptance, with a
   supplied neighbor list; this is not yet end-to-end local-search accounting.
-  Require v0.4 `lake build` before advancing.
-- **After v0.5:** adaptive GVNS and controlled-loop proofs; ask an expert to
-  independently audit the semantics and the literature.
-- **After v0.6:** pruning proof and empirical comparison; abandon any claim
-  of improvement if data or stronger published baselines contradict it.
+  v0.4 passed `lake build` (6025 jobs); continue to v0.5.
+- **After v0.5:** first-order finite moves, fuel-bounded loop and a
+  semantic query theorem; require a fresh Lean kernel-checked build.
+- **After v0.6:** adaptive GVNS with path-sensitive accounting; ask experts to
+  independently audit the semantics and originality.
+- **After v0.7+:** pruning proof and serious empirical comparisons; abandon
+  improvement claims when data or published baselines contradict them.
 
 ## Reviewer objections to prepare for
 
@@ -84,3 +86,7 @@ comparison against established frameworks.
 
 Before submission: check each venue's current policy on AI-assisted research
 and manuscript preparation, authorship, open artifacts and prior publication.
+
+## Progress after the verified v0.4 baseline
+
+The v0.5 research artifact separates **data-only neighborhood syntax** from the objective. It improves internal semantic accounting on a restricted `Fin (n + 1)` domain; this is a *scope restriction*, not evidence that arbitrary neighbor generators are oracle-free. The next publishability test is an adaptive control loop whose resource theorem depends on actual control flow. A credible article still requires formalized nontrivial combinatorial moves, external comparisons, and novelty review against existing synthesis/resource frameworks.

@@ -15,7 +15,8 @@ what is conventional and what remains conjectural.
 
 - [x] Write Lean category, semantics, certificates and proof tests.
 - [x] User confirmed successful Windows `lake build` for the corrected v0.1 core (6007 jobs).
-- [ ] Obtain **green `lake build`** for the new v0.2 synthesis modules and GitHub CI; commit generated manifest.
+- [x] User-confirmed green `lake build` through v0.4 (6025 jobs); v0.5 compilation and GitHub CI remain pending.
+- [ ] Commit and pin `lake-manifest.json` after reconciling with the current Mathlib release.
 - [ ] Audit `#print axioms` of major theorems after compilation.
 - [ ] Add `lake test` target if separate tests become necessary.
 - [x] Add a counterexample test showing raw `Shake` need not be non-worsening.
@@ -80,15 +81,24 @@ valuable even if the category-theory terminology is removed.
 
 - v0.2: typed finite grammar + **declared** static work estimates. Verified
   by user in Lean (6013 jobs).
-- v0.3: `probe`-instrumented semantics with a closed counted scoring client
-  and acceptance erasure proof (compiler check pending).
-- v0.4 (hypothesis): replace the opaque local-search interface with an
-  oracle-controlled DSL; ensure **all modeled objective observations** flow
-  through that effect and prove relevant dynamic upper bounds.
-- v0.5 (hypothesis): an adaptive GVNS in the same controlled semantics.
-- v0.6 (hypothesis): incremental synthesis and *sound, finite-grammar relative*
-  budget pruning; comparisons with naive enumeration and MORK/ReSyn-inspired
-  baselines, followed by held-out combinatorial problems.
+- v0.3: `probe`-instrumented acceptance and list-scoring semantics (user-verified).
+- v0.4: a metered best-of-feasible-list selector, with neighbor generation
+  still external (user-verified, 6025 jobs).
+- v0.5 (compilation pending): first-order finite moves plus a fuel-bounded
+  run; exact query counts for the restricted fragment.
+- v0.6 (research goal): adaptive GVNS in the same restricted oracle semantics.
+- v0.7+ (research goal): incremental synthesis and sound, finite-grammar-
+  relative budget pruning, then held-out combinatorial evaluations.
 
 No theorem proves a performance advantage, and no contribution should be
 claimed as novel before dedicated expert assessment.
+
+## v0.5 onwards — refined controlled semantics roadmap
+
+- [x] **v0.4:** supply feasible neighbors and count all selector/acceptance `probe` effects (user-verified).
+- [ ] **v0.5:** first-order finite move grammar and fuel-bounded loop; source written; await kernel compilation before checking this item.
+- [ ] **v0.6:** explicit adaptive controller (radius, accept/restart decision, fuel), with a proof of path-sensitive query bounds and tests showing that the controller actually changes neighborhoods.
+- [ ] **v0.7:** connect a nontrivial permutation problem, verified move feasibility and meaningful baselines; avoid equating the independent Python benchmark with the Lean executable.
+- [ ] **v0.8:** synthesis-space pruning with soundness and relative completeness, and experiments against naive enumeration.
+
+The fixed finite move language in v0.5 is intentionally limited. It is not a claim of state-of-the-art search quality or novel Writer semantics.
