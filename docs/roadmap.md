@@ -130,3 +130,18 @@ word “GVNS” should not be applied to v0.6 as a full-implementation claim.
 
 **Interpretation:** v0.7 implements a seeded GVNS-style fragment, not a
 probabilistically verified GVNS or publishable novelty claim by itself.
+
+
+## v0.8 — First permutation-valued TSP case study (pending build)
+
+- [x] Write an objective-independent segment reversal on finite tour positions.
+- [x] Encode tours as bijections and state the involution/validity theorems.
+- [x] Connect a cyclic objective to instrumented selector and elitist acceptance.
+- [x] Provide independently tested Python reference, including exhaustive
+      small-permutation checks; this is not a refinement proof.
+- [ ] Confirm `lake build` and executable output on the exact local commit.
+- [ ] Prove a two-edge 2-opt delta theorem under symmetric distance hypotheses.
+- [ ] Instrument distance-edge computations rather than only complete-tour probes.
+- [ ] Compare Lean and Python execution traces on identical external inputs,
+      then establish a formal refinement statement for the shared representation.
+- [ ] Add standard TSP instances, exact/known baselines and statistical evaluation.

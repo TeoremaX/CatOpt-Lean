@@ -1,13 +1,24 @@
 # Changelog
 
-## 0.7.0 — 2026-11-15 (new Lean proofs pending compilation)
+## 0.8.0 — 2026-11-15 (new Lean proofs pending compilation)
+
+- Introduce permutation-valued TSP tours as `Equiv.Perm (Fin (n+1))`.
+- Define inclusive segment reversal, its index involution, bijectivity and reversibility of `twoOpt`.
+- Implement cyclic weighted tour cost, objective-independent candidate generation and instrumented elitist search.
+- State exact semantic query counts and incumbent non-worsening for complete fuel-bounded runs.
+- Include four-city crossing demonstration and independently tested Python 2-opt reference (no refinement claim).
+- Add three-stage validation-gated local Git commits.
+- **Verification:** user-confirmed v0.7 `lake build` (6043 jobs); new v0.8 Lean proof compilation pending.
+
+
+## 0.7.0 — 2026-11-15 (user-confirmed Lean build: 6043 jobs)
 
 - Add objective-free seed-indexed first-order shaking and deterministic seed update.
 - Compose bounded inner adaptive VND-style descent with two-probe outer elitist acceptance.
 - Specify outer reset/advance, global incumbent monotonicity, and the uniform instrumented-query bound `f * (t * (2*m+4)+2)`.
 - Add fuel/budget certificates, seed-choice and rejection/acceptance examples, and Git verification-gated commits.
 - **Not proven probabilistic:** no stochastic distribution, random-convergence theorem, external benchmark refinement, or production full-GVNS guarantee.
-- **Verification:** v0.6 user-confirmed (`lake build`: 6037 jobs); v0.7 pending Lean compilation.
+- **Verification:** v0.7 user-confirmed (`lake build`: 6043 jobs), demo, three commits and clean worktree; linter style warnings remain.
 
 
 ## 0.6.0 — 2026-11-15 (user-confirmed Lean build)

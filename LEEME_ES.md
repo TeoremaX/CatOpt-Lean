@@ -149,3 +149,22 @@ y luego a 12, con 28 consultas registradas.
 **La semilla es determinista, no una distribución aleatoria formal.**
 Esta capa no verifica el TSP en Python ni el tiempo real. Consulta
 `docs/seeded-gvns.md` y no anuncies una v0.7 verificada sin `lake build`.
+
+
+## v0.8 — Rutas TSP como permutaciones verificables
+
+La nueva representación `Tour n = Equiv.Perm (Fin (n+1))` garantiza que
+una ruta contiene cada ciudad **exactamente una vez**. Los segmentos
+contiguos `Segment n` se invierten mediante `twoOpt`, preservando la
+permutación y cumpliendo `twoOpt (twoOpt t s) s = t`.
+
+Hemos añadido una instancia de cuatro ciudades, una función de coste
+cíclico que incluye el regreso al origen, selección elitista y un contador
+exacto de consultas de la semántica Lean: `fuel*(2*m+2)` para una paleta
+de `m` segmentos. El ejemplo previsto mejora el coste de 6 a 4.
+
+**Aún no se ha compilado v0.8 en Lean.** El usuario sí ha validado v0.7
+(6043 trabajos). El archivo Python solo es una referencia independiente:
+no hemos demostrado que ambos programas sean equivalentes. Tampoco existe
+una garantía de óptimo global o de tiempo real. Lee
+`docs/tsp-two-opt.md` y verifica con `lake build` antes de publicar.

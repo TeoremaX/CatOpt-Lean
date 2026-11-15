@@ -60,6 +60,8 @@ CatOpt-Lean/
 │   │   ├── FiniteNeighborhood.lean     data-only move DSL + fueled rounds
 │   │   ├── AdaptiveVNS.lean           adaptive finite-neighborhood controller + bound
 │   │   └── SeededGVNS.lean           seeded shaking + nested VND with metered acceptance
+│   ├── TSP/
+│   │   └── TwoOpt.lean               typed tours, reversal and oracle bounds
 │   ├── Algorithms/
 │   │   ├── GRASP.lean                   seeded GRASP-style rounds
 │   │   ├── GVNS.lean                    fixed-neighbourhood VNS schedule
@@ -116,6 +118,25 @@ python3 experiments/run_benchmark.py --runs 2 --budget 1500 --instances grid12
 ```
 
 The benchmark requires no third-party Python packages. Results are emitted to `experiments/results.csv` (ignored by Git). Executed smoke and reference batches (with a 135-row result CSV) are described in `docs/experiments.md` but are not evidence of algorithmic superiority.
+
+
+## v0.8: Permutation tours and 2-opt-style reversal (pending Lean compilation)
+
+`CatOpt/TSP/TwoOpt.lean` upgrades the former toy `Fin` state to a genuinely
+permutation-valued TSP tour (`Equiv.Perm (Fin (n+1))`). A typed segment reversal
+is an involution, and the resulting tours are bijective by construction.
+A cyclic distance objective and a metered best-of-2-opt round provide exact
+**recorded objective-call** counts (`fuel * (2*segments.length + 2)`) and
+non-worsening of the accepted incumbent. A four-city square illustrates a
+crossing tour with cost 6 improving to 4 after one 2-opt reversal.
+
+The Python `two_opt_reference.py` independently checks the same small example
+and exhaustively checks bijection/involution for 1–6 cities. It is **not**
+formally verified against the Lean program. No 2-opt delta theorem, full
+TSP GVNS, TSPLIB result or original discovery is claimed. See
+[`docs/tsp-two-opt.md`](docs/tsp-two-opt.md). The v0.7 branch was compiled by
+the user (6043 jobs); v0.8 must separately pass Lean before publication as a
+verified release.
 
 ## v0.2: generator and static budget certificates
 
