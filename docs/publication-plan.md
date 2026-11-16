@@ -1,92 +1,29 @@
-# Research program toward a credible CatOpt-Lean publication
+# Publication criteria
 
-**Status:** Research hypotheses; not yet an accepted scientific contribution.
-Prepared 2026-11-15. Read `novelty-audit.md` before describing novelty.
+CatOpt-Lean is not yet a journal manuscript. This note records the requirements for a defensible paper, rather than a planned submission date.
 
-## Candidate thesis
+## Possible contribution
 
-**Proof-carrying synthesis of adaptive combinatorial-search heuristics under
-explicit oracle semantics**. The ambition is not to invent grammar-based
-synthesis, resource types, or category-theoretic composition. Those exist.
-The testable contribution would be a *specific* correct-by-construction
-integration for adaptive, domain-specific metaheuristics, with a complete
-comparison against established frameworks.
+A compositional search language in which optimization procedures can be assembled under formally checked feasibility and resource contracts, with independently checkable certificates for the solutions produced.
 
-## Requirements for a publishable claim
+Parts of this idea already exist in program synthesis, verified resource accounting, certifying algorithms and automatic metaheuristic design. A publication must identify an additional result that is specific and demonstrably new.
 
-1. **Formal problem and semantic scope:** finite combinatorial spaces,
-   feasible typed candidate transformations, a single objective oracle,
-   adaptive bounded control, explicit random seeds if sampling is added.
-2. **Closed resource model:** all allowed objective queries flow through
-   a syntactic `oracle` command; local search is no longer an opaque function.
-3. **Machine-checked proofs:** (a) feasible incumbent, (b) elitist monotonicity,
-   (c) termination under finite fuel, (d) sound dynamic budget bound for
-   *all* modeled oracle calls, (e) synthesis soundness and relative completeness.
-4. **Executable refinement:** tie the interpreter actually benchmarked to
-   the model. If Python is retained, use a documented conformance suite and
-   describe remaining trust; a direct Lean executor provides a narrower gap.
-5. **Relevant adaptive algorithm:** at least one accepted-improvement-based
-   GVNS with multiple neighborhoods and an explicit variable neighborhood
-   schedule. The current "GVNS" fixed list is not sufficient.
-6. **Baselines:** a no-proof version of the *same* DSL, naive enumeration,
-   resource-guided pruning, and comparison against MORK/irace or a comparable
-   established automatic-design method where feasible.
-7. **Experimental validity:** held-out problem instances; paired seeds and
-   equal oracle budgets; robust statistics and multiple independent problem
-   families; report wall-time/overhead in addition to quality of solutions.
-8. **Novelty claim:** narrowly state what exact theorem, interface, algorithm
-   or measured trade-off is new *relative to each closest piece of prior art*.
+## Minimum evidence
 
-## Go/no-go checkpoints
+1. **A clear statement of novelty:** a theorem, a verified compiler or a measured design benefit not already established by the nearest systems.
+2. **A documented trust boundary:** which code runs inside Lean, which data arrive externally, which proof assumptions are used and which operations are counted.
+3. **Useful problem instances:** public TSP benchmarks or other appropriate combinatorial instances, not just the four-city demonstration.
+4. **Fair baselines:** equivalent unverified implementations, relevant synthesis frameworks and standard local-search alternatives.
+5. **Comparable resources:** paired seeds where relevant, comparable evaluation budgets, verification runtime, CPU time, variance and instance size.
+6. **Reproducibility:** source revision, toolchains, instance provenance, scripts and both positive and negative results.
+7. **Independent review:** feedback from researchers who work on formal verification and algorithm configuration.
 
-- **After v0.3:** prototype illustrates instrumentation; no total resource claim.
-- **After v0.4:** closed finite-list selection and metered acceptance, with a
-  supplied neighbor list; this is not yet end-to-end local-search accounting.
-  v0.4 passed `lake build` (6025 jobs); continue to v0.5.
-- **After v0.5:** first-order finite moves, fuel-bounded loop and a
-  semantic query theorem; require a fresh Lean kernel-checked build.
-- **After v0.6:** adaptive GVNS with path-sensitive accounting; ask experts to
-  independently audit the semantics and originality.
-- **After v0.7+:** pruning proof and serious empirical comparisons; abandon
-  improvement claims when data or published baselines contradict them.
+## What v0.10 currently proves
 
-## Reviewer objections to prepare for
+The external certificate path decodes a candidate tour into an actual permutation and, when the checker accepts, establishes local optimality relative to the finite family of inclusive segment reversals. It does not verify an external search program, prove global optimality, or provide evidence that verified synthesis outperforms alternative approaches.
 
-- "You have only reimplemented ReSyn for a smaller language." Answer must
-  give an actual metaheuristic-specific theorem or engineering result.
-- "The operator makes hidden objective calls." Resolve by controlled oracle
-  syntax and/or explicit refinement, not by assuming arbitrary costs.
-- "The category plays no essential role." Show a theorem that is naturally
-  transported through compositional interpretations or remove it from the
-  title/central contribution.
-- "This is toy optimization." Benchmark genuine combinatorial problems,
-  and compare against nontrivial automatic design baselines.
-- "The proofs are correct but the optimizer is not proved." Verify the
-  executed implementation or explicitly state the remaining trusted link.
+## Recommended research sequence
 
-## Manuscript outline (after results exist)
+First make the TSP checker efficient under explicitly stated symmetry assumptions and benchmark it. Then connect it to the synthesized search programs, establish resource properties for the closed execution semantics, and compare results with suitable literature baselines. Only then determine the paper's contribution and venue.
 
-1. Introduction and falsifiable research question.
-2. Positioning against MORK, ReSyn, CSLib and formal SLS models.
-3. Typed adaptive metaheuristic DSL and operational oracle semantics.
-4. Machine-checked theorems with statement-level assumptions.
-5. Certifying synthesizer and proof of pruning safety/completeness.
-6. Experiments, benchmarks, ablations, and analysis.
-7. Threats to validity, related work, limitations.
-8. Reproducibility appendices and permanent artifact release.
-
-## Possible targets (recheck annual calls when submitting)
-
-- GECCO: algorithm-design contribution with strong experiments.
-- CPAIOR: formal constraints and synthesis for combinatorial optimization.
-- Applied Category Theory: only if genuinely new categorical mathematics is
-  essential to the results, not as a label on ordinary functional composition.
-- Appropriate formal-methods workshops: if verification is the central
-  contribution and empirical quality is still preliminary.
-
-Before submission: check each venue's current policy on AI-assisted research
-and manuscript preparation, authorship, open artifacts and prior publication.
-
-## Progress after the verified v0.4 baseline
-
-The v0.5 research artifact separates **data-only neighborhood syntax** from the objective. It improves internal semantic accounting on a restricted `Fin (n + 1)` domain; this is a *scope restriction*, not evidence that arbitrary neighbor generators are oracle-free. The next publishability test is an adaptive control loop whose resource theorem depends on actual control flow. A credible article still requires formalized nontrivial combinatorial moves, external comparisons, and novelty review against existing synthesis/resource frameworks.
+See [related work](related-work.md), [current roadmap](roadmap.md) and [research positioning](research-positioning-v09.md). Earlier exploratory notes remain useful background but should not be presented as peer-reviewed conclusions.
