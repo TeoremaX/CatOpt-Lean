@@ -18,3 +18,5 @@ jobs:
         run: python3 tools/check_no_sorry.py
       - name: Run Lean demonstration
         run: lake exe catopt-demo
+      - name: Verify external certificate CLI (positive and adversarial cases)
+        run: python3 scripts/check_external_cli.py

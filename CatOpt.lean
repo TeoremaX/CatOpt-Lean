@@ -13,6 +13,7 @@ import CatOpt.DSL.AdaptiveVNS
 import CatOpt.DSL.SeededGVNS
 import CatOpt.TSP.TwoOpt
 import CatOpt.TSP.LocalOptimality
+import CatOpt.TSP.ExternalCertificate
 import CatOpt.Algorithms.GRASP
 import CatOpt.Algorithms.GVNS
 import CatOpt.Algorithms.IteratedGreedy
@@ -33,5 +34,6 @@ import CatOpt.Tests.AdaptiveVNS
 import CatOpt.Tests.SeededGVNS
 import CatOpt.Tests.TSP
 import CatOpt.Tests.LocalOptimality
+import CatOpt.Tests.ExternalCertificate
 
 /-! Public library API for CatOpt-Lean. -/
