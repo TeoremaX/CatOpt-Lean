@@ -120,7 +120,33 @@ python3 experiments/run_benchmark.py --runs 2 --budget 1500 --instances grid12
 The benchmark requires no third-party Python packages. Results are emitted to `experiments/results.csv` (ignored by Git). Executed smoke and reference batches (with a 135-row result CSV) are described in `docs/experiments.md` but are not evidence of algorithmic superiority.
 
 
-## v0.9 — Exhaustive, proof-carrying 2-opt local optimality (Lean pending)
+## v0.10 — External proof-carrying TSP input (Lean pending)
+
+The new [`catopt-certify`](CertifyMain.lean) executable accepts an **untrusted
+text certificate** containing a nonnegative directed distance matrix and one
+route. `CatOpt/TSP/ExternalCertificate.lean` validates the text and constructs
+a genuine `Equiv.Perm` only after checking finite inverse laws. It then runs
+the v0.9 exhaustive 2-opt local-optimality checker, with a formally stated
+end-to-end implication from text acceptance to local 2-opt minimality.
+
+```bash
+lake exe catopt-certify experiments/fixtures/square-accepted.cert  # exit 0
+lake exe catopt-certify experiments/fixtures/square-rejected.cert  # exit 1
+python3 scripts/check_external_cli.py
+```
+
+External CSV data can be converted using
+[`experiments/export_certificate.py`](experiments/export_certificate.py).
+**Lean, not Python, decides acceptance.** See
+[`docs/external-certificates-v10.md`](docs/external-certificates-v10.md) for
+the exact input protocol, rejection semantics and scientific limitations.
+
+**Release status:** the implementation and tests are prepared, but the new
+Lean code must still compile on the user's toolchain. This is a local-2-opt
+certificate, not global optimality, optimized runtime, or a publishable
+peer-reviewed research claim.
+
+## v0.9 — Exhaustive, proof-carrying 2-opt local optimality (user-verified)
 
 `CatOpt/TSP/LocalOptimality.lean` checks all ordered finite segment-reversal
 moves and provides general soundness and completeness theorems. An accepted
@@ -133,9 +159,8 @@ four-edge symmetric 2-opt cost formula must not be applied without symmetry.
 See [`docs/research-positioning-v09.md`](docs/research-positioning-v09.md) for
 the state of the art and what would be required for a research paper.
 
-**Verification:** v0.8 was accepted by Lean on the user's Windows machine
-(17,365 jobs); v0.9 must still pass its own build. No peer-reviewed-paper
-submission is ready.
+**Verification:** v0.8 and v0.9 were compiled by the user with Lean; v0.9 passed
+17,369 jobs and its Python tests. No peer-reviewed-paper submission is ready.
 
 ## v0.8: Permutation tours and 2-opt-style reversal (user-verified Lean compilation)
 

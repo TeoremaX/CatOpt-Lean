@@ -1,3 +1,12 @@
+## v0.10.0 — External proof-carrying local optima (Lean pending)
+
+- Add a restrictive text protocol and executable Lean parser for external TSP
+  matrix/tour data, with constructive permutation decoding and rejection.
+- Formal soundness theorem from accepted input to all finite 2-opt inequalities.
+- External CSV exporter, integration checks including adversarial cases, CI.
+- Disclosure: local not global optimality; integer distances; N ≤ 32; no
+  theorem of byte-to-matrix refinement, running time or source optimizer.
+
 # Changelog
 
 ## 0.9.0 — 2026-11-15 (Lean validation pending)

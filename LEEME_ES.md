@@ -1,3 +1,16 @@
+## v0.10 — Certificación de rutas TSP externas (pendiente de compilar en Lean)
+
+Nuevo ejecutable `lake exe catopt-certify <archivo.cert>`: valida en Lean la
+matriz de distancias y la permutación de ciudades aportada por otro programa.
+Si acepta, el teorema `verifyText_accepted_sound` garantiza que ninguna
+inversión de segmento 2-opt mejora la ruta **en ese vecindario**. No demuestra
+optimalidad global ni la corrección del optimizador externo.
+
+Pruebas: `py scripts/check_external_cli.py`; convertir CSV externos con
+`py experiments/export_certificate.py --matrix ... --tour ... --out ...`.
+Detalles en `docs/external-certificates-v10.md`. No publicar v0.10 como
+versión validada hasta que el compilador Lean acepte los nuevos módulos.
+
 # CatOpt-Lean v0.3 — guía en español
 
 **Qué es:** proyecto de investigación experimental en Lean 4 + Mathlib sobre
