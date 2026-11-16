@@ -1,106 +1,195 @@
-# CatOpt-Lean — Guía rápida en español
+## v0.10 — Certificación de rutas TSP externas (pendiente de compilar en Lean)
 
-**Qué has recibido:** un repositorio de investigación preparado para publicarse,
-con código Lean 4, una propuesta matemática rigurosa, un lenguaje de
-composición de algoritmos, tres familias de búsqueda, un experimento TSP con
-resultados reproducibles y un borrador de artículo técnico de nueve páginas.
+Nuevo ejecutable `lake exe catopt-certify <archivo.cert>`: valida en Lean la
+matriz de distancias y la permutación de ciudades aportada por otro programa.
+Si acepta, el teorema `verifyText_accepted_sound` garantiza que ninguna
+inversión de segmento 2-opt mejora la ruta **en ese vecindario**. No demuestra
+optimalidad global ni la corrección del optimizador externo.
 
-## La idea científica esencial
+Pruebas: `py scripts/check_external_cli.py`; convertir CSV externos con
+`py experiments/export_certificate.py --matrix ... --tour ... --out ...`.
+Detalles en `docs/external-certificates-v10.md`. No publicar v0.10 como
+versión validada hasta que el compilador Lean acepte los nuevos módulos.
 
-La intuición `Shake → LocalSearch → Accept` no es suficiente si cada etapa
-solo recibe una solución. Hay que distinguir la solución *incumbente* (la
-mejor aceptada hasta ahora) de la *candidata* (que puede empeorar al
-perturbarla).
+# CatOpt-Lean v0.3 — guía en español
 
-CatOpt-Lean define:
+**Qué es:** proyecto de investigación experimental en Lean 4 + Mathlib sobre
+lenguajes tipados para algoritmos de búsqueda, preservación de factibilidad,
+aceptación elitista y síntesis de programas de optimización. Contiene además
+un benchmark TSP independiente en Python y un manuscrito técnico anterior
+que **todavía no** describe v0.3.
 
-1. Una categoría de espacios cuyos morfismos preservan factibilidad.
-2. Un estado de búsqueda con incumbente y candidato factibles.
-3. Un DSL indexado por fases: `ready → candidate → improved → ready`.
-4. Una interpretación matemática que respeta composición, identidad y
-   asociatividad a nivel semántico.
-5. Un teorema general: el **coste del incumbente** no aumenta durante
-   programas correctamente tipados con aceptación elitista.
+## Qué está verificado
 
-Este teorema **no dice** que el candidato mejore siempre, ni que se alcance el
-óptimo global. La categoría no se presenta como un resultado novedoso en sí.
+- **v0.2:** el usuario ejecutó `lake build` en Windows (6013 trabajos),
+  `lake exe catopt-demo` (cinco recetas), `check_no_sorry.py` y los cinco
+  tests Python. Todo pasó el 15/11/2026.
+- **v0.3:** los nuevos archivos están preparados y revisados como fuentes,
+  pero **todavía no han pasado por un compilador Lean** en el entorno donde
+  se han generado. La verificación nueva debe completarse en tu ordenador.
 
-## Estado real del proyecto
+## Matemáticas fundamentales
 
-- **Python:** cinco tests ejecutados con éxito.
-- **Experimentos:** 135 ejecuciones (15 semillas por algoritmo e instancia),
-  tres instancias TSP pequeñas, óptimos exactos mediante Held–Karp.
-- **Artículo:** PDF de nueve páginas y código fuente LaTeX incluidos.
-- **Lean:** los archivos con declaraciones y pruebas están escritos, pero no
-  se han podido comprobar con el compilador en este entorno. Antes de poner
-  "formally verified" en GitHub, **ejecuta `lake build` y comprueba que
-  pasa**. GitHub Actions está configurado precisamente para hacerlo.
+Hay dos soluciones factibles en el estado: incumbente y candidato. Una
+perturbación puede empeorar el candidato sin empeorar el incumbente. La
+aceptación elitista elige la mejor de las dos según la función objetivo y
+sincroniza los dos campos. `CatOpt/DSL/Search.lean` contiene el teorema
+`program_monotone` para operadores que preservan factibilidad.
 
-## Instalar y ejecutar
+El DSL distingue tres etapas:
 
-1. Instala Git, VS Code y la extensión de Lean 4. Instala Lean mediante
-   [elan](https://lean-lang.org/install/). Puedes trabajar en Windows
-   directamente o en WSL2.
-2. Descomprime el ZIP. Abre la carpeta `CatOpt-Lean` en VS Code.
-3. Abre una terminal en esa carpeta y ejecuta:
+```text
+ready → candidate → improved → ready
+```
 
-```bash
-lake update
-lake exe cache get
+No pretendemos haber inventado la composición de algoritmos; el valor
+investigador dependerá de propiedades nuevas, representaciones fieles y
+experimentos rigurosos.
+
+## Novedad en v0.3: qué mide el contador
+
+`CatOpt/DSL/Resources.lean` define `probe P x`, que consulta explícitamente
+`P.cost x` y registra una observación. `probeMany` es un cliente cerrado
+que solo consulta el objetivo mediante `probe`: el teorema establece
+`queries = xs.length` y los valores coinciden con `xs.map P.cost`.
+
+`runMetered` interpreta el DSL preexistente y registra dos consultas por
+`accept`. Los teoremas expresan que el resultado es el mismo que el del
+intérprete anterior y que se conserva la monotonía del incumbente.
+
+**Advertencia:** `construct`, `shake`, `destroyRepair` y `localSearch` aún son
+funciones opacas que *pueden consultar el objetivo sin pasar por `probe`*.
+El contador de `runMetered` registra únicamente las observaciones explícitas
+de aceptación, **no el total de evaluaciones de la metaheurística**. No hay
+prueba sobre tiempo real, RAM, evaluación total de TSP o refinamiento de Python.
+
+## Novedad de v0.4: selección de vecinos con consultas medidas
+
+El módulo `CatOpt/DSL/OracleLocalSearch.lean` recibe una lista de soluciones
+factibles **ya construidas** y selecciona la mejor sin empeorar la solución
+inicial. Cada comparación invoca dos veces `probe`; se han escrito teoremas
+sobre la equivalencia con una selección pura y el número exacto de consultas
+(`2 × número_de_vecinos`). La aceptación añade dos consultas más.
+
+**Límite importante:** todavía no contabilizamos la generación de la lista de
+vecinos, ni los algoritmos GRASP/GVNS/IG originales. La garantía corresponde
+al selector cerrado y su aceptación, no al coste total de la metaheurística.
+Consulta `docs/oracle-local-search.md`.
+
+## Commits por fase
+
+He preparado un parche v0.4 con `apply_v04.ps1` que distribuye los cambios en
+**tres commits** y compila Lean antes de confirmar los cambios. Sigue
+`docs/git-workflow.md`. No modifica ni publica tu repositorio remoto sin tu
+acción. El historial de v0.3 debe estar confirmado primero (`git status`
+limpio). El script se ejecuta desde la carpeta donde extraigas el parche.
+
+## Archivos para leer
+
+- `CatOpt/DSL/Resources.lean`: semántica de consultas y pruebas.
+- `CatOpt/Tests/Resources.lean`: ejemplos comprobables por Lean.
+- `CatOpt/Examples/Resources.lean`: ejemplos ejecutables.
+- `docs/resources.md`: especificación de las garantías y límites.
+- `docs/novelty-audit.md`: antecedentes y auditoría de originalidad.
+- `docs/publication-plan.md`: plan científico y criterios de publicación.
+- `docs/verification-status.md`: qué compilaciones realmente han ocurrido.
+
+## Instalación del parche
+
+Descomprime el ZIP `CatOpt-Lean-v0.4-parche-commits.zip` sobre la carpeta de tu
+proyecto `C:\Users\User\Documents\CatOpt-Lean`, conservando `.git/`,
+`.lake/` y `lake-manifest.json`. No es necesario reinstalar Mathlib.
+
+Ejecuta desde PowerShell:
+
+```powershell
 lake build
 lake exe catopt-demo
+py tools/check_no_sorry.py
+py -m unittest discover -s experiments -p "test_*.py" -v
 ```
 
-4. Para los experimentos (solo necesitas Python 3.11+):
+Si falla la compilación, el módulo nuevo todavía no está verificado.
+No publiques afirmaciones de verificación de v0.3 hasta que `lake build`
+termine correctamente en la revisión exacta que vas a subir a GitHub.
 
-```bash
-python3 -m unittest discover -s experiments -p 'test_*.py' -v
-python3 experiments/run_benchmark.py --runs 15 --budget 5000
-```
+## Qué hacer después
 
-En Windows, si `python3` no se reconoce, utiliza `py` o `python`. Después del
-primer `lake update` correcto, añade al commit el `lake-manifest.json` que
-se haya generado: es importante para fijar dependencias.
+La siguiente fase (v0.5) deberá definir un lenguaje restringido de generación
+de vecinos y un control adaptativo, para excluir llamadas opacas al objetivo y
+obtener una cota de consultas de extremo a extremo en ese fragmento.
 
-## Orden recomendado para aprender y revisar el código
+**Originalidad:** la síntesis guiada por recursos (ReSyn), las metaheurísticas
+generadas por componentes (MORK) y la mónada de costes `TimeM` (CSLib) ya
+existen. El hecho de combinarlas en Lean no basta por sí solo para publicar.
 
-- **Día 1:** `CatOpt/Basic.lean` y `CatOpt/Operators.lean`.
-- **Día 2:** `CatOpt/Category.lean` y las leyes categóricas.
-- **Día 3:** `CatOpt/Properties.lean`, especialmente la aceptación.
-- **Día 4:** `CatOpt/DSL/Syntax.lean` y `CatOpt/DSL/Semantics.lean`.
-- **Día 5:** `CatOpt/DSL/Search.lean`, `program_monotone`, `denote_run`.
-- **Día 6:** las tres familias `CatOpt/Algorithms/` y el caso de estudio.
-- **Día 7:** `docs/formulation.md`, `docs/related-work.md` y el artículo.
+## Versión 0.5 — movimientos finitos y presupuesto de consultas
 
-## Subir a GitHub
+Se ha añadido `CatOpt/DSL/FiniteNeighborhood.lean`: un pequeño DSL sin funciones de callback para generar vecinos en `Fin (n + 1)`, seguido de selección y aceptación instrumentadas. La ejecución de `fuel` rondas demuestra, cuando Lean compile las nuevas pruebas, que el número de consultas registradas es `fuel * (2 * moves.length + 2)` y que el incumbente no empeora.
 
-Desde la carpeta raíz y después de revisar que `lake build` pasa:
+El ejemplo parte de 15, utiliza retrocesos 1 y 2, ejecuta 3 rondas y está diseñado para obtener 9 con 18 consultas de oráculo. Un certificado `FuelBudget 18` acepta el programa y uno de 17 lo rechaza.
 
-```bash
-git init
-git branch -M main
-git add .
-git commit -m "Initial CatOpt-Lean research prototype"
-git remote add origin https://github.com/TU_USUARIO/CatOpt-Lean.git
-git push -u origin main
-```
+**Límites:** no contamos tiempo de CPU, coste de aritmética, evaluaciones del TSP Python ni operadores antiguos opacos; el controlador no es GVNS adaptativo. Más detalles en `docs/finite-neighborhood.md`. La v0.4 ya compiló (6025 trabajos), pero **v0.5 requiere ejecutar `lake build` en tu equipo**. Para actualizar con commits, utiliza el script `apply_v05.ps1` del ZIP de parche.
 
-Primero crea el repositorio vacío en GitHub. Si prefieres usar GitHub CLI,
-consulta `docs/github.md`.
 
-## Cómo contárselo a un investigador
+## Versión 0.6 — controlador adaptativo de vecindarios
 
-> Estoy desarrollando un framework de optimización composicional en Lean 4.
-> Formalizo una categoría de transformaciones que preservan factibilidad,
-> un DSL tipado por fases y propiedades estructurales sobre incumbentes.
-> Lo interesante no es que los algoritmos compongan funciones, sino imponer
-> contratos que sobreviven a la composición y estudiar hasta qué punto
-> permiten sintetizar algoritmos válidos automáticamente. Por ahora el
-> modelo es un prototipo con aceptación elitista y las pruebas aún deben
-> superar la verificación final del compilador.
+El módulo `CatOpt/DSL/AdaptiveVNS.lean` introduce un catálogo finito y
+una política de cambio: ante mejora estricta del incumbente vuelve al primer
+vecindario; sin mejora avanza al siguiente. Dos consultas `probe` adicionales
+contabilizan esa decisión. Un catálogo con un máximo certificado de `m`
+movimientos por vecindario y un `fuel = f` tiene una **cota de consultas
+modeladas** de `f * (2*m+4)`. La ejecución conserva la factibilidad y no
+empeora el incumbente.
 
-**Para convertirlo en un resultado investigador serio:** terminar la
-compilación Lean, ampliar a espacios heterogéneos, formalizar un funtor desde
-la categoría libre de programas (no solo la interpretación), verificar 2-opt
-y VND de forma fiel, y estudiar bibliografía de hiperheurísticas y diseño
-automático de algoritmos.
+**Precisión científica:** no es todavía un GVNS completo: falta la perturbación
+aleatoria y la búsqueda VND interna. Tampoco se ha verificado el TSP de Python
+ni hay una cota temporal real. La compilación Lean de v0.6 fue **confirmada** (6037 trabajos);
+v0.5 sí compiló en el ordenador del usuario (6031 trabajos).
+
+Para instalar v0.6 conservando los commits, utilizar el ZIP del parche y
+`apply_v06.ps1`; véase `docs/git-workflow.md` y `docs/adaptive-vns.md`.
+
+
+## v0.7 — Perturbación por semilla y búsqueda VND interna
+
+El módulo `CatOpt/DSL/SeededGVNS.lean` compone una perturbación de primer orden
+sin acceso a la función objetivo con un VND acotado y una aceptación elitista
+externa. Demuestra, una vez compilado por Lean, monotonía y la cota de
+consultas instrumentadas `f * (t*(2*m+4)+2)`. El ejemplo pasa de 15 a 15
+y luego a 12, con 28 consultas registradas.
+
+**La semilla es determinista, no una distribución aleatoria formal.**
+Esta capa no verifica el TSP en Python ni el tiempo real. Consulta
+`docs/seeded-gvns.md` y no anuncies una v0.7 verificada sin `lake build`.
+
+
+## v0.8 — Rutas TSP como permutaciones verificables
+
+La nueva representación `Tour n = Equiv.Perm (Fin (n+1))` garantiza que
+una ruta contiene cada ciudad **exactamente una vez**. Los segmentos
+contiguos `Segment n` se invierten mediante `twoOpt`, preservando la
+permutación y cumpliendo `twoOpt (twoOpt t s) s = t`.
+
+Hemos añadido una instancia de cuatro ciudades, una función de coste
+cíclico que incluye el regreso al origen, selección elitista y un contador
+exacto de consultas de la semántica Lean: `fuel*(2*m+2)` para una paleta
+de `m` segmentos. El ejemplo previsto mejora el coste de 6 a 4.
+
+**Aún no se ha compilado v0.8 en Lean.** El usuario sí ha validado v0.7
+(6043 trabajos). El archivo Python solo es una referencia independiente:
+no hemos demostrado que ambos programas sean equivalentes. Tampoco existe
+una garantía de óptimo global o de tiempo real. Lee
+`docs/tsp-two-opt.md` y verifica con `lake build` antes de publicar.
+
+## v0.9 — Verificador formal de óptimo local 2-opt
+
+Nuevo `CatOpt/TSP/LocalOptimality.lean`: comprueba exhaustivamente que ninguna
+inversión de segmento reduce el coste de una ruta. Sus teoremas en Lean deben
+pasar `lake build` antes de declararse verificados. Esto NO demuestra óptimo
+global ni valida el ejecutable Python. La revisión bibliográfica y los
+criterios para aspirar a un artículo están en `docs/research-positioning-v09.md`.
+
+La fórmula rápida de cuatro aristas de 2-opt requiere simetría. El modelo
+del TSP actual NO exige simetría, por lo que el nuevo comprobador evalúa
+el coste cíclico completo y no utiliza esa fórmula.

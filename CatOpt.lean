@@ -5,10 +5,35 @@ import CatOpt.Properties
 import CatOpt.DSL.Syntax
 import CatOpt.DSL.Semantics
 import CatOpt.DSL.Search
+import CatOpt.DSL.Synthesis
+import CatOpt.DSL.Resources
+import CatOpt.DSL.OracleLocalSearch
+import CatOpt.DSL.FiniteNeighborhood
+import CatOpt.DSL.AdaptiveVNS
+import CatOpt.DSL.SeededGVNS
+import CatOpt.TSP.TwoOpt
+import CatOpt.TSP.LocalOptimality
+import CatOpt.TSP.ExternalCertificate
 import CatOpt.Algorithms.GRASP
 import CatOpt.Algorithms.GVNS
 import CatOpt.Algorithms.IteratedGreedy
 import CatOpt.Examples.Finite
+import CatOpt.Examples.Synthesis
+import CatOpt.Examples.Resources
+import CatOpt.Examples.OracleLocalSearch
+import CatOpt.Examples.FiniteNeighborhood
+import CatOpt.Examples.AdaptiveVNS
+import CatOpt.Examples.SeededGVNS
+import CatOpt.Examples.TSP
 import CatOpt.Tests.Proofs
+import CatOpt.Tests.Synthesis
+import CatOpt.Tests.Resources
+import CatOpt.Tests.OracleLocalSearch
+import CatOpt.Tests.FiniteNeighborhood
+import CatOpt.Tests.AdaptiveVNS
+import CatOpt.Tests.SeededGVNS
+import CatOpt.Tests.TSP
+import CatOpt.Tests.LocalOptimality
+import CatOpt.Tests.ExternalCertificate
 
 /-! Public library API for CatOpt-Lean. -/

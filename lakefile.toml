@@ -1,6 +1,6 @@
 name = "catopt"
-version = "0.1.0"
-defaultTargets = ["CatOpt", "catopt-demo"]
+version = "0.10.0"
+defaultTargets = ["CatOpt", "catopt-demo", "catopt-certify"]
 
 [[require]]
 name = "mathlib"
@@ -13,3 +13,7 @@ name = "CatOpt"
 [[lean_exe]]
 name = "catopt-demo"
 root = "Main"
+
+[[lean_exe]]
+name = "catopt-certify"
+root = "CertifyMain"

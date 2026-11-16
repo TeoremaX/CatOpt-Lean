@@ -74,3 +74,28 @@ probability). None is in the current proof set.
 - No claim of novelty relative to full hyper-heuristic literature;
 - No claim of correctness of unverified Python algorithms *from* Lean;
 - No claim of global convergence, polynomial complexity or optimality.
+
+## Explicit comparison with grammar-based automatic design (v0.2 review)
+
+The literature already includes finite grammars that produce metaheuristics,
+so **typed enumeration itself is not an originality claim**:
+
+- Mascia et al., *Grammar-based generation of stochastic local search
+  heuristics through automatic algorithm configuration tools*, Computers &
+  Operations Research 51 (2014), 190–199,
+  https://doi.org/10.1016/j.cor.2014.05.020
+- Pagnozzi & Stützle, *Evaluating the impact of grammar complexity in
+  automatic algorithm design*, International Transactions in Operational
+  Research (2020), https://doi.org/10.1111/itor.12902
+- *On the automatic generation of metaheuristic algorithms for combinatorial
+  optimization problems*, European Journal of Operational Research 318(3)
+  (2024), https://doi.org/10.1016/j.ejor.2024.06.001
+
+The latter explicitly describes an **implicit grammar driven by component
+requirements/contracts**, so neither the use of contracts to permit component
+substitution nor grammar generation alone is new. CatOpt-Lean v0.2 instead
+studies a very small **proof-assistant-checked semantics**: stage safety,
+feasibility carried in the primitive interface, formal incumbent-monotonicity,
+and a proof that *user-declared estimated* work stays under budget. The
+incremental result is educational; a research contribution would need stronger
+verified cost/refinement theorems or substantive empirical benefits.

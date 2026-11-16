@@ -1,11 +1,75 @@
 import CatOpt
 
 open CatOpt
+open CatOpt.DSL.Synthesis
 
 def main : IO Unit := do
-  IO.println "CatOpt-Lean — executable finite-state semantics example"
+  IO.println "CatOpt-Lean — finite-state semantics and typed synthesis demonstration"
   IO.println s!"Initial incumbent objective: {Examples.initial.incumbent}"
   IO.println s!"GRASP-style result:          {Examples.graspResult.incumbent}"
   IO.println s!"GVNS fixed-schedule result:  {Examples.gvnsResult.incumbent}"
   IO.println s!"Iterated Greedy result:      {Examples.igResult.incumbent}"
-  IO.println "Each program has an abstract monotonic-incumbent proof in Lean."
+  IO.println "The Lean search semantics has an abstract monotonic-incumbent proof."
+  IO.println ""
+
+  let candidates := Examples.synthesizedRecipes
+  IO.println s!"Synthesized budget-certified recipes: {candidates.length}"
+  for recipe in candidates do
+    let result := recipe.execute Examples.implementation Examples.initial
+    IO.println s!"  rounds={recipe.rounds.length}, estimated work={estimatedCost Examples.synthesisCosts recipe.rounds}, incumbent={result.incumbent}"
+  IO.println "Budget units are user-declared estimates, not verified runtime costs."
+
+  IO.println ""
+  IO.println "v0.3 — Explicit instrumented-oracle observations"
+  IO.println s!"  Explicit list probes: {Examples.probeExample.queries}"
+  IO.println s!"  One round (acceptance) probes: {Examples.meteredRoundExample.queries}"
+  IO.println "  The opaque local-search operator is NOT instrumented here."
+  IO.println "  Counters do not bound its hidden evaluations, CPU time, or real costs."
+
+  IO.println ""
+  IO.println "v0.4 — Verified finite-neighborhood selection (explicit observations)"
+  IO.println s!"  Supplied feasible neighbors: {Examples.v04Candidates.length}"
+  IO.println s!"  Selection observations:     {Examples.v04Selection.queries}"
+  IO.println s!"  Round observations:         {Examples.v04Round.queries}"
+  IO.println s!"  Accepted incumbent:        {Examples.v04Round.value.incumbent}"
+  IO.println "  Counts cover selector + acceptance, NOT neighbor generation or other opaque operators."
+
+  IO.println ""
+  IO.println "v0.5 — First-order finite moves + fuel-bounded oracle semantics"
+  IO.println s!"  Move tokens per round:      {Examples.finiteLineMoves.length}"
+  IO.println "  Fuel (complete rounds):    3"
+  IO.println s!"  Exact modeled probes:       {Examples.finiteLineResult.queries}"
+  IO.println s!"  Final accepted incumbent:  {Examples.finiteLineResult.value.incumbent.val}"
+  IO.println "  Generators use only finite arithmetic. Counts exclude CPU/Lean reduction work."
+  IO.println "  This is not yet adaptive GVNS or a formally verified TSP solver."
+
+  IO.println ""
+  IO.println "v0.6 — Adaptive finite VNS-style controller (not full randomized GVNS)"
+  IO.println s!"  Catalog neighborhoods:         {Examples.adaptiveCatalog.neighborhoods.length}"
+  IO.println "  Fuel (attempted steps):        4"
+  IO.println s!"  Metered oracle probes:        {Examples.adaptiveResult.queries}"
+  IO.println s!"  Final accepted incumbent:     {Examples.adaptiveResult.value.search.incumbent.val}"
+  IO.println s!"  Next neighborhood index:      {Examples.adaptiveResult.value.index}"
+  IO.println "  Strict improvement resets the neighborhood; otherwise it advances."
+  IO.println "  Modeled queries cover selection, acceptance and policy comparisons."
+  IO.println "  Not a full GVNS/VND proof and not a machine-time bound."
+
+  IO.println ""
+  IO.println "v0.7 — Seeded first-order shaking with nested VND-style descent"
+  IO.println "  Outer attempts:              2"
+  IO.println "  Inner VND fuel per attempt:   2"
+  IO.println s!"  First-step incumbent:        {Examples.seededFirst.value.search.incumbent.val}"
+  IO.println s!"  Final accepted incumbent:    {Examples.seededResult.value.search.incumbent.val}"
+  IO.println s!"  Modeled objective probes:    {Examples.seededResult.queries}"
+  IO.println s!"  Next outer index:            {Examples.seededResult.value.index}"
+  IO.println "  Seed evolution is deterministic, not a proved random distribution."
+  IO.println "  Counts refer to the closed finite DSL, not Python or wall-clock cost."
+
+  IO.println ""
+  IO.println "v0.8 — Permutation-valued TSP tours and two-opt segment reversal"
+  IO.println s!"  Four-city crossing cost:    {TSP.tourCost Examples.squareInstance Examples.crossingTour}"
+  IO.println s!"  Reversed-segment cost:     {TSP.tourCost Examples.squareInstance (TSP.twoOpt Examples.crossingTour Examples.middleSegment)}"
+  IO.println s!"  Accepted incumbent cost:  {TSP.tourCost Examples.squareInstance Examples.squareRound.value.incumbent}"
+  IO.println s!"  Instrumented query count: {Examples.squareRound.queries}"
+  IO.println "  Tour validity follows from Equiv.Perm; reversing twice restores the route."
+  IO.println "  No claim of Python refinement or TSP optimality is implied."

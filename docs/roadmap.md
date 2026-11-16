@@ -14,10 +14,12 @@ what is conventional and what remains conjectural.
 ## M1 — Trusted formal foundation (highest priority)
 
 - [x] Write Lean category, semantics, certificates and proof tests.
-- [ ] Install Lean toolchain, generate a manifest and obtain **green `lake build`**.
+- [x] User confirmed successful Windows `lake build` for the corrected v0.1 core (6007 jobs).
+- [x] User-confirmed green `lake build` through v0.6 (6037 jobs); remote CI status still requires confirmation.
+- [ ] Commit and pin `lake-manifest.json` after reconciling with the current Mathlib release.
 - [ ] Audit `#print axioms` of major theorems after compilation.
 - [ ] Add `lake test` target if separate tests become necessary.
-- [ ] Add a counterexample test showing raw `Shake` need not be non-worsening.
+- [x] Add a counterexample test showing raw `Shake` need not be non-worsening.
 
 **Success criterion:** GitHub CI shows a green Lean build with zero sorry/admit.
 
@@ -62,7 +64,8 @@ negative and null results, and the chosen performance comparisons are fair.
 
 ## M5 — Potential research contribution
 
-- [ ] Design a typed, resource/contract-aware generator of candidate programs.
+- [x] Prototype typed candidate generation and a proof-carrying *static estimated-work* filter.
+- [ ] Prove contracts on *actual* evaluations and generalized operator effects (not just declared estimates).
 - [ ] Search the synthesis space, avoiding duplicate semantic programs using
   sound rewrites.
 - [ ] Demonstrate at least one empirically useful new combination or
@@ -72,3 +75,73 @@ negative and null results, and the chosen performance comparisons are fair.
 
 **Success criterion:** a specific theorem or experimental insight remains
 valuable even if the category-theory terminology is removed.
+
+
+## Revised research milestones after the 2026-11-15 originality audit
+
+- v0.2: typed finite grammar + **declared** static work estimates. Verified
+  by user in Lean (6013 jobs).
+- v0.3: `probe`-instrumented acceptance and list-scoring semantics (user-verified).
+- v0.4: a metered best-of-feasible-list selector, with neighbor generation
+  still external (user-verified, 6025 jobs).
+- v0.5 (user-verified): first-order finite moves plus a fuel-bounded
+  run; exact query counts for the restricted fragment.
+- v0.6 (user-verified): deterministic adaptive VNS-style controller with metered policy comparisons, without stochastic shaking or nested VND.
+- v0.7+ (research goal): incremental synthesis and sound, finite-grammar-
+  relative budget pruning, then held-out combinatorial evaluations.
+
+No theorem proves a performance advantage, and no contribution should be
+claimed as novel before dedicated expert assessment.
+
+## v0.5 onwards — refined controlled semantics roadmap
+
+- [x] **v0.4:** supply feasible neighbors and count all selector/acceptance `probe` effects (user-verified).
+- [x] **v0.5:** first-order finite move grammar and fuel-bounded loop; user-confirmed Lean build (6031 jobs).
+- [x] **v0.6:** explicit reset/advance adaptive controller with uniform fuel-based query bound, Lean-verified by user. A path-sensitive *exact closed-form* cost theorem remains future work.
+- [ ] **v0.7:** connect a nontrivial permutation problem, verified move feasibility and meaningful baselines; avoid equating the independent Python benchmark with the Lean executable.
+- [ ] **v0.8:** synthesis-space pruning with soundness and relative completeness, and experiments against naive enumeration.
+
+The fixed finite move language in v0.5 is intentionally limited. It is not a claim of state-of-the-art search quality or novel Writer semantics.
+
+
+## v0.6 — adaptive neighborhood-change controller
+
+A finite schedule of objective-independent move lists plus a strict-improvement
+reset policy. The controller instruments two additional objective comparisons
+and proves a uniform `fuel * (2*cap+4)` bound on modeled queries. Pending Lean
+compilation before this stage is considered complete.
+
+Next scientific step: model randomized shaking and inner VND with explicit
+probability and resource interfaces, and prove a refinement relation from
+the closed Lean interpreter to an executable benchmark implementation. The
+word “GVNS” should not be applied to v0.6 as a full-implementation claim.
+
+
+## v0.7 — Seeded nested search (pending Lean validation)
+
+- [x] Write deterministic seed-indexed objective-free shaking interpreter.
+- [x] Compose nested VND-style adaptive run with outer elitist acceptance.
+- [x] State semantic query cap and incumbent monotonicity theorems.
+- [ ] Confirm `lake build` and tests for the exact new revision.
+- [ ] Prove stochastic laws for any genuinely random perturbation mechanism.
+- [ ] Define true reference GVNS/VND termination criteria and correspondence.
+- [ ] Replace toy `Fin` objectives with verified permutation moves and fair
+  combinatorial benchmarks.
+
+**Interpretation:** v0.7 implements a seeded GVNS-style fragment, not a
+probabilistically verified GVNS or publishable novelty claim by itself.
+
+
+## v0.8 — First permutation-valued TSP case study (pending build)
+
+- [x] Write an objective-independent segment reversal on finite tour positions.
+- [x] Encode tours as bijections and state the involution/validity theorems.
+- [x] Connect a cyclic objective to instrumented selector and elitist acceptance.
+- [x] Provide independently tested Python reference, including exhaustive
+      small-permutation checks; this is not a refinement proof.
+- [ ] Confirm `lake build` and executable output on the exact local commit.
+- [ ] Prove a two-edge 2-opt delta theorem under symmetric distance hypotheses.
+- [ ] Instrument distance-edge computations rather than only complete-tour probes.
+- [ ] Compare Lean and Python execution traces on identical external inputs,
+      then establish a formal refinement statement for the shared representation.
+- [ ] Add standard TSP instances, exact/known baselines and statistical evaluation.
